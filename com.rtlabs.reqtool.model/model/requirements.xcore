@@ -1,0 +1,60 @@
+@GenModel(editDirectory="/com.rtlabs.reqtool.model.edit/src-gen", editorDirectory="/com.rtlabs.reqtool.model.editor/src-gen")
+package com.rtlabs.reqtool.model.requirements
+
+import org.eclipse.app4mc.capra.simpletrace.tracemetamodel.SimpleTraceModel
+import org.eclipse.app4mc.capra.generic.artifacts.ArtifactWrapperContainer
+
+enum Priority {
+	LOWEST
+	LOW
+	HIGH
+	HIGHEST
+}
+
+enum State {
+	NEW
+	ACCEPTED
+	IMPLEMENTING
+	IMPLEMENTED
+	TESTING
+	TESTED_PASS
+	TESTED_FAIL
+	COMPLETE
+}
+
+class Person {
+	String firstName
+	String lastName
+	String company
+	String email
+}
+
+class Requirement {
+	int identifier
+	String body
+	Priority priority
+	State state
+	int outgoing
+	Date created
+	Date modified
+	contains Person owner
+	container Specification specification opposite requirements
+	
+	derived String name get {
+		return "R" + identifier
+	}
+	
+	op String toString() {
+		return name
+	}
+}
+
+class Specification {
+	contains Requirement[] requirements opposite specification
+	contains SimpleTraceModel traceModel
+	contains ArtifactWrapperContainer artifactWrapperContainer
+	int nextIdentifier
+	
+	op Requirement getNewRequirement()
+	op void submitNewRequirement()	
+}

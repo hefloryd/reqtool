@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="Requirements"
+            id="com.rtlabs.reqtool.ui">
+      </category>
+      <view
+            name="Trace View"
+            icon="icons/sample.gif"
+            category="com.rtlabs.reqtool.ui"
+            class="com.rtlabs.reqtool.ui.views.TraceView"
+            id="com.rtlabs.reqtool.ui.views.TraceView">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="*">
+         <view
+               ratio="0.5"
+               relative="org.eclipse.ui.views.ProblemView"
+               relationship="right"
+               id="com.rtlabs.reqtool.ui.views.TraceView">
+         </view>
+      </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="com.rtlabs.reqtool.ui.editors.SpreadSheetEditor"
+            default="false"
+            extensions="req"
+            id="com.rtlabs.reqtool.ui.editor"
+            name="Requirements Editor">
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="com.rtlabs.reqtool.ui.handler.CallEditor"
+            id="com.rtlabs.reqtool.ui.command1"
+            name="Open Requirements Editor">
+      </command>
+   </extension>
+
+</plugin>

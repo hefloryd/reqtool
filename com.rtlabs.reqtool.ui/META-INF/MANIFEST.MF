@@ -1,0 +1,24 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: ReqTool UI
+Bundle-SymbolicName: com.rtlabs.reqtool.ui;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: com.rtlabs.reqtool.ui.Activator
+Bundle-Vendor: rt-labs.com
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.jface.text,
+ org.eclipse.core.resources,
+ org.eclipse.ui.editors,
+ org.eclipse.ui.ide,
+ org.eclipse.nebula.widgets.nattable.core,
+ org.eclipse.emf.edit.ui,
+ org.eclipse.app4mc.capra.generic;bundle-version="0.7.0",
+ org.eclipse.zest.core,
+ org.eclipse.zest.layouts,
+ com.rtlabs.reqtool.model;bundle-version="0.1.0",
+ com.rtlabs.reqtool.model.edit,
+ org.eclipse.app4mc.capra.default.tracemetamodel,
+ org.eclipse.jface.databinding;bundle-version="1.7.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
