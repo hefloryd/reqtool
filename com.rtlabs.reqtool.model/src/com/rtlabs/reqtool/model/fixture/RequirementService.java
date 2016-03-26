@@ -34,7 +34,7 @@ public class RequirementService {
 
 	public List<Requirement> createRequirements() {
 		Requirement req;
-		
+				
 		req = RequirementsFactory.eINSTANCE.createRequirement();
 		req.setIdentifier(1);
 		req.setBody ("The motor shall contain an object database");
@@ -140,9 +140,13 @@ public class RequirementService {
 			trace.setSource(_traces[i][0]);
 			trace.setTarget(_traces[i][1]);
 			
-			if (_traces[i][0] instanceof Requirement) {
-				Requirement requirement = (Requirement) _traces[i][0];
-				requirement.setOutgoing(requirement.getOutgoing() + 1);
+			if (trace.getSource() instanceof Requirement) {
+				Requirement requirement = (Requirement) trace.getSource();
+				requirement.setChildren(requirement.getChildren() + 1);
+			}
+			if (trace.getTarget() instanceof Requirement) {
+				Requirement requirement = (Requirement) trace.getTarget();
+				requirement.setParents(requirement.getParents() + 1);
 			}
 			traces.add(trace);			
 		}
@@ -172,12 +176,13 @@ public class RequirementService {
 		if (specification == null) {
 			specification = RequirementsFactory.eINSTANCE.createSpecification();
 			specification.getRequirements().addAll(createRequirements());
+			specification.setNextIdentifier(specification.getRequirements().size() + 1);
 			
 			specification.setArtifactWrapperContainer(ArtifactsFactory.eINSTANCE.createArtifactWrapperContainer());
 			specification.getArtifactWrapperContainer().getArtifacts().addAll(createArtifactWrappers());			
 			
 			specification.setTraceModel(TracemetamodelFactory.eINSTANCE.createSimpleTraceModel());
-			specification.getTraceModel().getTraces().addAll(createTraces());			
+			specification.getTraceModel().getTraces().addAll(createTraces());						
 		}
 		return specification;
 	}

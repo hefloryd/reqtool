@@ -14,8 +14,6 @@ import org.eclipse.app4mc.capra.generic.handlers.PriorityHandler;
 import org.eclipse.app4mc.capra.generic.helpers.ExtensionPointHelper;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.jface.viewers.StructuredSelection;
 
 import com.rtlabs.reqtool.model.requirements.Requirement;
@@ -27,11 +25,8 @@ public class TraceManager {
 		TraceMetamodelAdapter traceAdapter = ExtensionPointHelper.getTraceMetamodelAdapter().get();
 		TracePersistenceAdapter persistenceAdapter = ExtensionPointHelper.getTracePersistenceAdapter().get();
 
-		ResourceSet resourceSet = new ResourceSetImpl();
-		// add trace model to resource set
-		Optional<EObject> traceModel = persistenceAdapter.getTraceModel(resourceSet);
-		// add artifact wrapper model to resource set
-		Optional<ArtifactWrapperContainer> existingArtifactWrappers = persistenceAdapter.getArtifactWrappers(resourceSet);
+		Optional<EObject> traceModel = persistenceAdapter.getTraceModel(requirement);
+		Optional<ArtifactWrapperContainer> existingArtifactWrappers = persistenceAdapter.getArtifactWrappers(requirement);
 
 		Collection<ArtifactHandler> artifactHandlers = ExtensionPointHelper.getArtifactHandlers();
 
@@ -50,7 +45,14 @@ public class TraceManager {
 				EObject root = traceAdapter.createTrace(chosenType.get(), traceModel, selectionAsEObjects);
 				persistenceAdapter.saveTracesAndArtifactWrappers(root, selectionAsEObjects, existingArtifactWrappers);
 				
-				requirement.setOutgoing(requirement.getOutgoing() + 1);
+				requirement.setChildren(requirement.getChildren() + selectionList.size());
+				for (Object o : selectionList) {
+					if (o instanceof Requirement) {
+						Requirement r = (Requirement) o;
+						r.setParents(r.getParents() + 1);						
+					}
+					
+				}
 			}
 	
 		}

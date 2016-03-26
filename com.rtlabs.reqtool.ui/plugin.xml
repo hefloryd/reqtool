@@ -32,8 +32,9 @@
          point="org.eclipse.ui.editors">
       <editor
             class="com.rtlabs.reqtool.ui.editors.SpreadSheetEditor"
+            contributorClass="com.rtlabs.reqtool.ui.editors.SpreadSheetActionBarContributor"
             default="false"
-            extensions="req"
+            extensions="spec"
             id="com.rtlabs.reqtool.ui.editor"
             name="Requirements Editor">
       </editor>
@@ -41,10 +42,31 @@
    <extension
          point="org.eclipse.ui.commands">
       <command
-            defaultHandler="com.rtlabs.reqtool.ui.handler.CallEditor"
-            id="com.rtlabs.reqtool.ui.command1"
-            name="Open Requirements Editor">
+            defaultHandler="com.rtlabs.reqtool.ui.handler.AddRequirement"
+            id="com.rtlabs.reqtool.ui.addRequirement"
+            name="Add Requirement">
       </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="com.rtlabs.reqtool.ui.addRequirement"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+N">
+      </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="com.rtlabs.reqtool.ui.category"
+            name="Requirements">
+      </category>
+      <wizard
+            category="com.rtlabs.reqtool.ui.category"
+            class="com.rtlabs.reqtool.ui.wizards.NewWizard"
+            id="com.rtlabs.reqtool.ui.wizard"
+            name="Specification">
+      </wizard>
    </extension>
 
 </plugin>

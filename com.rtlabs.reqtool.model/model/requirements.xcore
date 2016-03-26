@@ -1,4 +1,4 @@
-@GenModel(editDirectory="/com.rtlabs.reqtool.model.edit/src-gen", editorDirectory="/com.rtlabs.reqtool.model.editor/src-gen")
+@GenModel(editDirectory="/com.rtlabs.reqtool.model.edit/src-gen", fileExtensions="spec")
 package com.rtlabs.reqtool.model.requirements
 
 import org.eclipse.app4mc.capra.simpletrace.tracemetamodel.SimpleTraceModel
@@ -34,7 +34,8 @@ class Requirement {
 	String body
 	Priority priority
 	State state
-	int outgoing
+	int parents
+	int children
 	Date created
 	Date modified
 	contains Person owner
@@ -55,6 +56,5 @@ class Specification {
 	contains ArtifactWrapperContainer artifactWrapperContainer
 	int nextIdentifier
 	
-	op Requirement getNewRequirement()
-	op void submitNewRequirement()	
+	op Requirement createNewRequirement()
 }

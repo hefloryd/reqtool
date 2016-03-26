@@ -8,6 +8,7 @@ Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.rtlabs.reqtool.model.fixture,
+ com.rtlabs.reqtool.model.persistence,
  com.rtlabs.reqtool.model.requirements,
  com.rtlabs.reqtool.model.requirements.impl,
  com.rtlabs.reqtool.model.requirements.util

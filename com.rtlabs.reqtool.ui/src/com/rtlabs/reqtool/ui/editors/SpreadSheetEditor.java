@@ -11,10 +11,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.common.command.BasicCommandStack;
 import org.eclipse.emf.common.command.CommandStackListener;
 import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EContentAdapter;
 import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
+import org.eclipse.emf.edit.domain.EditingDomain;
+import org.eclipse.emf.edit.domain.IEditingDomainProvider;
 import org.eclipse.emf.edit.provider.ComposedAdapterFactory;
 import org.eclipse.emf.edit.provider.ReflectiveItemProviderAdapterFactory;
 import org.eclipse.emf.edit.provider.resource.ResourceItemProviderAdapterFactory;
@@ -27,12 +31,11 @@ import org.eclipse.nebula.widgets.nattable.config.CellConfigAttributes;
 import org.eclipse.nebula.widgets.nattable.config.DefaultNatTableStyleConfiguration;
 import org.eclipse.nebula.widgets.nattable.config.IConfigRegistry;
 import org.eclipse.nebula.widgets.nattable.config.IEditableRule;
-import org.eclipse.nebula.widgets.nattable.data.IColumnPropertyAccessor;
+import org.eclipse.nebula.widgets.nattable.data.IColumnAccessor;
 import org.eclipse.nebula.widgets.nattable.data.IDataProvider;
 import org.eclipse.nebula.widgets.nattable.data.IRowDataProvider;
 import org.eclipse.nebula.widgets.nattable.data.IRowIdAccessor;
 import org.eclipse.nebula.widgets.nattable.data.ListDataProvider;
-import org.eclipse.nebula.widgets.nattable.data.ReflectiveColumnPropertyAccessor;
 import org.eclipse.nebula.widgets.nattable.edit.EditConfigAttributes;
 import org.eclipse.nebula.widgets.nattable.edit.editor.ComboBoxCellEditor;
 import org.eclipse.nebula.widgets.nattable.edit.editor.MultiLineTextCellEditor;
@@ -72,14 +75,13 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.part.EditorPart;
 
-import com.rtlabs.reqtool.model.fixture.RequirementService;
 import com.rtlabs.reqtool.model.requirements.Priority;
-import com.rtlabs.reqtool.model.requirements.Requirement;
+import com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals;
 import com.rtlabs.reqtool.model.requirements.Specification;
 import com.rtlabs.reqtool.model.requirements.State;
 import com.rtlabs.reqtool.model.requirements.provider.RequirementsItemProviderAdapterFactory;
 
-public class SpreadSheetEditor extends EditorPart {
+public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvider {
 	public static final Object ID = "com.rtlabs.reqtool.ui.editor";
 
 	private static final String LABEL_BODY = "_BODY"; // BODY seems to affect entire bodyDataLayer
@@ -215,17 +217,15 @@ public class SpreadSheetEditor extends EditorPart {
 
 		// Add a listener to set the most recent command's affected objects to be the selection of the viewer with focus.
 		//
-		commandStack.addCommandStackListener
-			(new CommandStackListener() {
-				 public void commandStackChanged(final EventObject event) {
-					 PlatformUI.getWorkbench().getDisplay().asyncExec
-						 (new Runnable() {
-							  public void run() {
-								  firePropertyChange(IEditorPart.PROP_DIRTY);
-							  }
-						  });
-				 }
-			 });
+		commandStack.addCommandStackListener(new CommandStackListener() {
+			public void commandStackChanged(final EventObject event) {
+				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+					public void run() {
+						firePropertyChange(IEditorPart.PROP_DIRTY);
+					}
+				});
+			}
+		});
 
 		// Create the editing domain with a special command stack.
 		//
@@ -249,7 +249,6 @@ public class SpreadSheetEditor extends EditorPart {
 					try {
 						resource.save(saveOptions);
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -265,10 +264,8 @@ public class SpreadSheetEditor extends EditorPart {
 			firePropertyChange(IEditorPart.PROP_DIRTY);
 			
 		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -298,53 +295,45 @@ public class SpreadSheetEditor extends EditorPart {
 		URI resourceURI = EditUIUtil.getURI(getEditorInput(), editingDomain.getResourceSet().getURIConverter());	
 		Resource resource = editingDomain.getResourceSet().getResource(resourceURI, true);
 		specification = (Specification) resource.getContents().get(0);
-		specification.getRequirements().addAll(RequirementService.getInstance().createRequirements());
 	}
 	
-	protected void createInitialModel() {
-		specification = RequirementService.getInstance().getSpecification();
-//		EClass eClass = (EClass)RequirementsPackage.eINSTANCE.getEClassifier("Specification");
-//		specification = (Specification) RequirementsPackage.eINSTANCE.getRequirementsFactory().create(eClass);
-//		specification.getRequirements().addAll(RequirementService.getInstance().createRequirements());
-//		specification.getArtifactWrapperContainer().getArtifacts().addAll(RequirementService.getInstance().createArtifactWrappers());
-//		specification.getTraceModel().getTraces().addAll(RequirementService.getInstance().createTraces());
-	}
-
 	@Override
 	public void createPartControl(Composite parent) {
 	    parent.setLayout(new GridLayout());
 
 	    // property names of the Requirement class
-		String[] propertyNames = { "body", "priority", "state", "outgoing", "created" };
+		String[] propertyNames = { "body", "priority", "state", "parents", "children", "created" };
 
 	    // mapping from property to label, needed for column header labels
 	    Map<String, String> propertyToLabelMap = new HashMap<String, String>();
 	    propertyToLabelMap.put("body", "Body");
 	    propertyToLabelMap.put("priority", "Priority");
 	    propertyToLabelMap.put("state", "State");
-	    propertyToLabelMap.put("outgoing", "Outgoing");
+	    propertyToLabelMap.put("parents", "Parents");
+	    propertyToLabelMap.put("children", "Children");
 	    propertyToLabelMap.put("created", "Created");
 
-	    IColumnPropertyAccessor<Requirement> columnPropertyAccessor = 
-	        new ReflectiveColumnPropertyAccessor<Requirement>(propertyNames);
-
-	    // Create/load the model
-	    //createModel();
-	    createInitialModel();
+	    IColumnAccessor<EObject> columnPropertyAccessor = new SpreadSheetColumnPropertyAccessor(adapterFactory, propertyNames);
 	    
+	    // Create/load the model
+	    createModel();
+
+	    @SuppressWarnings("unchecked")
+		EList<EObject> requirements = (EList<EObject>) specification.eGet(Literals.SPECIFICATION__REQUIREMENTS);
+
 	    // build the body layer stack
-		IRowDataProvider<Requirement> bodyDataProvider = new ListDataProvider<Requirement>(specification.getRequirements(), columnPropertyAccessor);
+		IRowDataProvider<EObject> bodyDataProvider = new ListDataProvider<EObject>(requirements, columnPropertyAccessor);
 	    final DataLayer bodyDataLayer = new DataLayer(bodyDataProvider);
 	    DefaultBodyLayerStack bodyLayerStack = new DefaultBodyLayerStack(bodyDataLayer);
 	    
 	    // set row selection model with single selection enabled
-	    IRowIdAccessor<Requirement> rowIdAccessor = new IRowIdAccessor<Requirement>() {			
+	    IRowIdAccessor<EObject> rowIdAccessor = new IRowIdAccessor<EObject>() {			
 			@Override
-			public Serializable getRowId(Requirement requirement) {
-				return requirement.getName();
+			public Serializable getRowId(EObject object) {
+				return object.toString();
 			}
 		};
-	    RowSelectionModel<Requirement> selectionModel = new RowSelectionModel<Requirement>(bodyLayerStack.getSelectionLayer(), bodyDataProvider, rowIdAccessor, false);
+	    RowSelectionModel<EObject> selectionModel = new RowSelectionModel<EObject>(bodyLayerStack.getSelectionLayer(), bodyDataProvider, rowIdAccessor, false);
 		bodyLayerStack.getSelectionLayer().setSelectionModel(selectionModel);
 
 	    final ColumnOverrideLabelAccumulator columnLabelAccumulator = new ColumnOverrideLabelAccumulator(bodyDataLayer);
@@ -354,7 +343,7 @@ public class SpreadSheetEditor extends EditorPart {
 		columnLabelAccumulator.registerColumnOverrides(2, LABEL_STATE);		
 		
 	    // build the column header layer stack
-	    IDataProvider columnHeaderDataProvider = new DefaultColumnHeaderDataProvider(propertyNames, propertyToLabelMap);
+	    IDataProvider columnHeaderDataProvider = new DefaultColumnHeaderDataProvider(propertyNames, propertyToLabelMap); // TODO: Use EMF ItemProvider
 	    DataLayer columnHeaderDataLayer = new DataLayer(columnHeaderDataProvider);
 	    ILayer columnHeaderLayer = new ColumnHeaderLayer(columnHeaderDataLayer, bodyLayerStack.getViewportLayer(), bodyLayerStack.getSelectionLayer());
 	    
@@ -414,8 +403,8 @@ public class SpreadSheetEditor extends EditorPart {
 	    GridDataFactory.fillDefaults().grab(true, true).applyTo(natTable);
 	}
 
-	private void addSelectionProvider(IRowDataProvider<Requirement> bodyDataProvider, DefaultBodyLayerStack bodyLayerStack) {
-		ISelectionProvider selectionProvider = new RowSelectionProvider<Requirement>(
+	private void addSelectionProvider(IRowDataProvider<EObject> bodyDataProvider, DefaultBodyLayerStack bodyLayerStack) {
+		ISelectionProvider selectionProvider = new RowSelectionProvider<EObject>(
 				bodyLayerStack.getSelectionLayer(), 
 				bodyDataProvider, 
 				false);
@@ -449,5 +438,11 @@ public class SpreadSheetEditor extends EditorPart {
 	public void setFocus() {
 	}
 	
+	public Specification getSpecification() {
+		return specification;
+	}
 	
+	public EditingDomain getEditingDomain() {
+		return editingDomain;
+	}
 }

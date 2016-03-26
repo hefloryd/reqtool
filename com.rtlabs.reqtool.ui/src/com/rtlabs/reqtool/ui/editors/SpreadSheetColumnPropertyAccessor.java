@@ -1,0 +1,61 @@
+package com.rtlabs.reqtool.ui.editors;
+
+import org.eclipse.emf.common.notify.AdapterFactory;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.edit.provider.IItemLabelProvider;
+import org.eclipse.emf.edit.provider.IItemPropertyDescriptor;
+import org.eclipse.emf.edit.provider.IItemPropertySource;
+import org.eclipse.nebula.widgets.nattable.data.IColumnPropertyAccessor;
+
+public class SpreadSheetColumnPropertyAccessor implements IColumnPropertyAccessor<EObject> {
+	
+	private AdapterFactory adapterFactory;
+	private String[] propertyNames;
+
+	public SpreadSheetColumnPropertyAccessor(AdapterFactory adapterFactory, String[] propertyNames) {
+		this.adapterFactory = adapterFactory;
+		this.propertyNames = propertyNames;
+	}
+
+	@Override
+	public Object getDataValue(EObject rowObject, int columnIndex) {
+		IItemPropertySource adapter = (IItemPropertySource)adapterFactory.adapt(rowObject, IItemPropertySource.class);
+		String propertyName = propertyNames[columnIndex];
+		IItemPropertyDescriptor descriptor = adapter.getPropertyDescriptor(rowObject, propertyName);
+		Object propertyValue = descriptor.getPropertyValue(rowObject);
+		if (propertyValue instanceof IItemLabelProvider) {
+			IItemLabelProvider labelProvider = (IItemLabelProvider) propertyValue;
+			return labelProvider.getText(rowObject);			
+		}
+		return null;
+	}
+
+	@Override
+	public void setDataValue(EObject rowObject, int columnIndex, Object newValue) {
+		IItemPropertySource adapter = (IItemPropertySource)adapterFactory.adapt(rowObject, IItemPropertySource.class);
+		String propertyName = propertyNames[columnIndex];
+		IItemPropertyDescriptor descriptor = adapter.getPropertyDescriptor(rowObject, propertyName);
+		descriptor.setPropertyValue(rowObject, newValue);
+	}
+
+	@Override
+	public int getColumnCount() {
+		return propertyNames.length;
+	}
+
+	@Override
+	public String getColumnProperty(int columnIndex) {
+		String propertyName = propertyNames[columnIndex];
+		return propertyName;
+	}
+
+	@Override
+	public int getColumnIndex(String propertyName) {
+		for (int i = 0; i < propertyNames.length; i++) {
+			if (propertyNames[i].equals(propertyName))
+				return i;
+		}
+		return -1;
+	}
+
+}

@@ -6,8 +6,6 @@ import org.eclipse.app4mc.capra.generic.adapters.TraceMetamodelAdapter;
 import org.eclipse.app4mc.capra.generic.adapters.TracePersistenceAdapter;
 import org.eclipse.app4mc.capra.generic.helpers.ExtensionPointHelper;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -34,7 +32,7 @@ public class TraceView extends ViewPart implements IZoomableWorkbenchPart {
 	private GraphViewer viewer;
 	private ISelectionListener selectionListener;
 	private TraceMetamodelAdapter metaModelAdapter;
-	private Optional<EObject> traceModel;
+	private TracePersistenceAdapter tracePersistenceAdapter;
 
 	private class GlobalDeleteActionHandler extends Action {
 
@@ -47,6 +45,9 @@ public class TraceView extends ViewPart implements IZoomableWorkbenchPart {
 					EntityConnectionData connectionData = (EntityConnectionData) element;
 					EObject source = (EObject) connectionData.source;
 					EObject dest = (EObject) connectionData.dest;
+					
+					Optional<EObject> traceModel = tracePersistenceAdapter.getTraceModel(source);
+					
 					metaModelAdapter.deleteTrace(source, dest, traceModel);
 					viewer.refresh();
 					viewer.applyLayout();
@@ -58,12 +59,10 @@ public class TraceView extends ViewPart implements IZoomableWorkbenchPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		metaModelAdapter = ExtensionPointHelper.getTraceMetamodelAdapter().get();
-		TracePersistenceAdapter tracePersistenceAdapter = ExtensionPointHelper.getTracePersistenceAdapter().get();
-		ResourceSet resourceSet = new ResourceSetImpl();
-		traceModel = tracePersistenceAdapter.getTraceModel(resourceSet);
+		tracePersistenceAdapter = ExtensionPointHelper.getTracePersistenceAdapter().get();
 		
 		viewer = new GraphViewer(parent, SWT.BORDER);
-		viewer.setContentProvider(new TraceNodeContentProvider(metaModelAdapter, traceModel));
+		viewer.setContentProvider(new TraceNodeContentProvider(metaModelAdapter, tracePersistenceAdapter));
 		viewer.setLabelProvider(new TraceNodeLabelProvider());
 		viewer.setInput(null);
 		

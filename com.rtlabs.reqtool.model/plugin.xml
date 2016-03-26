@@ -21,5 +21,12 @@
             class="com.rtlabs.reqtool.model.persistence.TracePersistenceAdapter">
       </persistenceHandler>
    </extension>
+   <extension
+         point="org.eclipse.emf.ecore.factory_override">
+      <factory
+            class="com.rtlabs.reqtool.model.requirements.RequirementsFactoryImpFinal"
+            uri="com.rtlabs.reqtool.model.requirements">
+      </factory>
+   </extension>
 
 </plugin>
