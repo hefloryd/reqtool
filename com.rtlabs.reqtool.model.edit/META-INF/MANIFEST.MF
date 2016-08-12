@@ -13,6 +13,5 @@ Require-Bundle: org.eclipse.core.runtime,
  com.rtlabs.reqtool.model;visibility:=reexport,
  org.eclipse.emf.edit;visibility:=reexport,
  org.eclipse.emf.ecore;visibility:=reexport,
- org.eclipse.app4mc.capra.default.tracemetamodel;visibility:=reexport,
- org.eclipse.app4mc.capra.generic;visibility:=reexport
+ org.eclipse.app4mc.capra.ui;visibility:=reexport
 Bundle-ActivationPolicy: lazy

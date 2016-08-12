@@ -68,5 +68,23 @@
             name="Specification">
       </wizard>
    </extension>
+   <extension
+         point="org.eclipse.app4mc.capra.configuration.persistenceHadler">
+      <persistenceHandler
+            class="com.rtlabs.reqtool.ui.adapters.TracePersistenceAdapter">
+      </persistenceHandler>
+   </extension>
+   <extension
+         point="org.eclipse.app4mc.capra.configuration.TraceabilityMetamodel">
+      <TraceabilityMetamodelAdpter
+            class="com.rtlabs.reqtool.ui.adapters.TraceMetaModelAdapter">
+      </TraceabilityMetamodelAdpter>
+   </extension>
+   <extension
+         point="org.eclipse.app4mc.capra.configuration.ArtifactMetaModel">
+      <ArtifactMetaModelAdapter
+            class="com.rtlabs.reqtool.ui.adapters.ArtifactMetaModelAdapterImpl">
+      </ArtifactMetaModelAdapter>
+   </extension>
 
 </plugin>

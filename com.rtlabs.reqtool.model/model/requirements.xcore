@@ -1,8 +1,7 @@
 @GenModel(editDirectory="/com.rtlabs.reqtool.model.edit/src-gen", fileExtensions="spec")
 package com.rtlabs.reqtool.model.requirements
 
-import org.eclipse.app4mc.capra.simpletrace.tracemetamodel.SimpleTraceModel
-import org.eclipse.app4mc.capra.generic.artifacts.ArtifactWrapperContainer
+import org.eclipse.emf.ecore.EObject
 
 enum Priority {
 	LOWEST
@@ -29,13 +28,24 @@ class Person {
 	String email
 }
 
-class Requirement {
+class Traceable {
+	refers EObject[] parents
+	refers EObject[] children
+
+	derived int numberOfParents get {
+		return parents.size();
+	}	
+
+	derived int numberOfChildren get {
+		return children.size();
+	}		
+}
+
+class Requirement extends Traceable {
 	int identifier
 	String body
 	Priority priority
 	State state
-	int parents
-	int children
 	Date created
 	Date modified
 	contains Person owner
@@ -44,16 +54,30 @@ class Requirement {
 	derived String name get {
 		return "R" + identifier
 	}
-	
+
 	op String toString() {
 		return name
 	}
 }
 
+class Artifact extends Traceable {
+	String name
+	String uri
+	String artifactHandler
+	container ArtifactContainer parent opposite artifacts
+	
+	op String toString() {
+		return name + ": " + uri
+	}	
+}
+
+class ArtifactContainer {
+	contains Artifact[] artifacts opposite parent
+}
+
 class Specification {
 	contains Requirement[] requirements opposite specification
-	contains SimpleTraceModel traceModel
-	contains ArtifactWrapperContainer artifactWrapperContainer
+	contains ArtifactContainer artifactContainer
 	int nextIdentifier
 	
 	op Requirement createNewRequirement()

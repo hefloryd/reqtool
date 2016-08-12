@@ -6,12 +6,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.eclipse.app4mc.capra.generic.adapters.TraceMetamodelAdapter;
-import org.eclipse.app4mc.capra.generic.adapters.TracePersistenceAdapter;
-import org.eclipse.app4mc.capra.generic.artifacts.ArtifactWrapperContainer;
-import org.eclipse.app4mc.capra.generic.handlers.ArtifactHandler;
-import org.eclipse.app4mc.capra.generic.handlers.PriorityHandler;
-import org.eclipse.app4mc.capra.generic.helpers.ExtensionPointHelper;
+import org.eclipse.app4mc.capra.core.adapters.TraceMetamodelAdapter;
+import org.eclipse.app4mc.capra.core.adapters.TracePersistenceAdapter;
+import org.eclipse.app4mc.capra.core.handlers.ArtifactHandler;
+import org.eclipse.app4mc.capra.core.handlers.PriorityHandler;
+import org.eclipse.app4mc.capra.core.helpers.ExtensionPointHelper;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -25,8 +24,8 @@ public class TraceManager {
 		TraceMetamodelAdapter traceAdapter = ExtensionPointHelper.getTraceMetamodelAdapter().get();
 		TracePersistenceAdapter persistenceAdapter = ExtensionPointHelper.getTracePersistenceAdapter().get();
 
-		Optional<EObject> traceModel = persistenceAdapter.getTraceModel(requirement);
-		Optional<ArtifactWrapperContainer> existingArtifactWrappers = persistenceAdapter.getArtifactWrappers(requirement);
+		EObject traceModel = persistenceAdapter.getTraceModel(requirement);
+		EObject artifactModel = persistenceAdapter.getArtifactWrappers(requirement);
 
 		Collection<ArtifactHandler> artifactHandlers = ExtensionPointHelper.getArtifactHandlers();
 
@@ -36,47 +35,38 @@ public class TraceManager {
 			ArrayList<Object> list = new ArrayList<Object>(selectionList);
 			list.add(0, requirement);
 
-			List<EObject> selectionAsEObjects = mapSelectionToEObjects(existingArtifactWrappers, artifactHandlers, list);
+			List<EObject> selectionAsEObjects = mapSelectionToEObjects(artifactModel, artifactHandlers, list);
 
 			Collection<EClass> traceTypes = traceAdapter.getAvailableTraceTypes(selectionAsEObjects);
 			Optional<EClass> chosenType = traceTypes.stream().findFirst();
 
 			if (chosenType.isPresent()) {
 				EObject root = traceAdapter.createTrace(chosenType.get(), traceModel, selectionAsEObjects);
-				persistenceAdapter.saveTracesAndArtifactWrappers(root, selectionAsEObjects, existingArtifactWrappers);
-				
-				requirement.setChildren(requirement.getChildren() + selectionList.size());
-				for (Object o : selectionList) {
-					if (o instanceof Requirement) {
-						Requirement r = (Requirement) o;
-						r.setParents(r.getParents() + 1);						
-					}
-					
-				}
+				persistenceAdapter.saveTracesAndArtifacts(root, artifactModel);				
 			}
 	
 		}
 	}
 	
 	private List<EObject> mapSelectionToEObjects(
-			Optional<ArtifactWrapperContainer> existingArtifactWrappers, 
+			EObject artifactModel, 
 			Collection<ArtifactHandler> artifactHandlers,
 			List<Object> selection) {
-		return selection.stream().map(sel -> convertToEObject(sel, artifactHandlers, existingArtifactWrappers))
+		return selection.stream().map(sel -> convertToEObject(sel, artifactHandlers, artifactModel))
 				.filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
 	}
 
 	private Optional<EObject> convertToEObject(Object sel,
-			Collection<ArtifactHandler> artifactHandlers, Optional<ArtifactWrapperContainer> existingArtifactWrappers) {
+			Collection<ArtifactHandler> artifactHandlers, EObject artifactModel) {
 		List<ArtifactHandler> availableHandlers = artifactHandlers.stream()
 				.filter(handler -> handler.canHandleSelection(sel)).collect(Collectors.toList());
 		Optional<PriorityHandler> priorityHandler = ExtensionPointHelper.getPriorityHandler();
 
 		if (availableHandlers.size() == 1) {
-			return Optional.of(availableHandlers.get(0).getEObjectForSelection(sel, existingArtifactWrappers));
+			return Optional.of(availableHandlers.get(0).getEObjectForSelection(sel, artifactModel));
 		} else if (availableHandlers.size() > 1 && priorityHandler.isPresent()) {
 			ArtifactHandler selectedHandler = priorityHandler.get().getSelectedHandler(availableHandlers, sel);
-			return Optional.of(selectedHandler.getEObjectForSelection(sel, existingArtifactWrappers));
+			return Optional.of(selectedHandler.getEObjectForSelection(sel, artifactModel));
 		} else {
 			System.out.println("There is no handler for " + sel + " so it will be ignored.");
 			return Optional.empty();

@@ -1,10 +1,8 @@
 package com.rtlabs.reqtool.ui.views;
 
-import java.util.Optional;
-
-import org.eclipse.app4mc.capra.generic.adapters.TraceMetamodelAdapter;
-import org.eclipse.app4mc.capra.generic.adapters.TracePersistenceAdapter;
-import org.eclipse.app4mc.capra.generic.helpers.ExtensionPointHelper;
+import org.eclipse.app4mc.capra.core.adapters.TraceMetamodelAdapter;
+import org.eclipse.app4mc.capra.core.adapters.TracePersistenceAdapter;
+import org.eclipse.app4mc.capra.core.helpers.ExtensionPointHelper;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelection;
@@ -46,7 +44,7 @@ public class TraceView extends ViewPart implements IZoomableWorkbenchPart {
 					EObject source = (EObject) connectionData.source;
 					EObject dest = (EObject) connectionData.dest;
 					
-					Optional<EObject> traceModel = tracePersistenceAdapter.getTraceModel(source);
+					EObject traceModel = tracePersistenceAdapter.getTraceModel(source);
 					
 					metaModelAdapter.deleteTrace(source, dest, traceModel);
 					viewer.refresh();
@@ -62,7 +60,7 @@ public class TraceView extends ViewPart implements IZoomableWorkbenchPart {
 		tracePersistenceAdapter = ExtensionPointHelper.getTracePersistenceAdapter().get();
 		
 		viewer = new GraphViewer(parent, SWT.BORDER);
-		viewer.setContentProvider(new TraceNodeContentProvider(metaModelAdapter, tracePersistenceAdapter));
+		viewer.setContentProvider(new TraceNodeContentProvider());
 		viewer.setLabelProvider(new TraceNodeLabelProvider());
 		viewer.setInput(null);
 		

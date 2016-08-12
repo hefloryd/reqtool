@@ -1,6 +1,5 @@
 package com.rtlabs.reqtool.ui.views;
 
-import org.eclipse.app4mc.capra.generic.artifacts.ArtifactWrapper;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.IFigure;
@@ -9,11 +8,14 @@ import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.zest.core.viewers.EntityConnectionData;
+import org.eclipse.zest.core.viewers.IEntityConnectionStyleProvider;
 import org.eclipse.zest.core.viewers.IEntityStyleProvider;
+import org.eclipse.zest.core.widgets.ZestStyles;
 
+import com.rtlabs.reqtool.model.requirements.Artifact;
 import com.rtlabs.reqtool.model.requirements.Requirement;
 
-public class TraceNodeLabelProvider extends LabelProvider implements IEntityStyleProvider {
+public class TraceNodeLabelProvider extends LabelProvider implements IEntityStyleProvider, IEntityConnectionStyleProvider {
 
 	@Override
 	public String getText(Object element) {
@@ -21,9 +23,9 @@ public class TraceNodeLabelProvider extends LabelProvider implements IEntityStyl
 			Requirement requirement = (Requirement) element;
 			return requirement.getName();			
 		}
-		else if (element instanceof ArtifactWrapper) {
-			ArtifactWrapper artifactWrapper = (ArtifactWrapper) element;
-			return artifactWrapper.getUri();			
+		else if (element instanceof Artifact) {
+			Artifact artifact = (Artifact) element;
+			return artifact.getUri();			
 		}
 		else if (element instanceof EntityConnectionData) {
 			return null;
@@ -83,6 +85,30 @@ public class TraceNodeLabelProvider extends LabelProvider implements IEntityStyl
 	@Override
 	public boolean fisheyeNode(Object entity) {
 		return false;
+	}
+
+	@Override
+	public int getConnectionStyle(Object src, Object dest) {
+		System.out.println(src + " -> " + dest);
+		return ZestStyles.CONNECTIONS_DIRECTED;		
+	}
+
+	@Override
+	public Color getColor(Object src, Object dest) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Color getHighlightColor(Object src, Object dest) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getLineWidth(Object src, Object dest) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	
