@@ -69,22 +69,40 @@
       </wizard>
    </extension>
    <extension
-         point="org.eclipse.app4mc.capra.configuration.persistenceHadler">
+         point="org.eclipse.capra.configuration.persistenceHandler">
       <persistenceHandler
-            class="com.rtlabs.reqtool.ui.adapters.TracePersistenceAdapter">
+            class="com.rtlabs.reqtool.ui.adapters.TracePersistenceAdapterImpl">
       </persistenceHandler>
    </extension>
    <extension
-         point="org.eclipse.app4mc.capra.configuration.TraceabilityMetamodel">
-      <TraceabilityMetamodelAdpter
-            class="com.rtlabs.reqtool.ui.adapters.TraceMetaModelAdapter">
-      </TraceabilityMetamodelAdpter>
+         point="org.eclipse.capra.configuration.TraceabilityMetaModel">
+      <TraceabilityMetaModelAdapter
+            class="com.rtlabs.reqtool.ui.adapters.TraceMetaModelAdapterImpl">
+      </TraceabilityMetaModelAdapter>
    </extension>
    <extension
-         point="org.eclipse.app4mc.capra.configuration.ArtifactMetaModel">
+         point="org.eclipse.capra.configuration.ArtifactMetaModel">
       <ArtifactMetaModelAdapter
             class="com.rtlabs.reqtool.ui.adapters.ArtifactMetaModelAdapterImpl">
       </ArtifactMetaModelAdapter>
    </extension>
+   <!--
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:com.rtlabs.reqtool.ui.views.TraceView">
+         <menu
+               commandId="org.eclipse.ui.navigate.showInQuickMenu"
+               id="view.views.SampleView.showInMenu"
+               label="Show In">
+            <dynamic
+                  class="org.eclipse.ui.ExtensionFactory:showInContribution"
+                  id="org.eclipse.ui.menus.dynamicShowInMenu">
+            </dynamic>
+         </menu>
+      </menuContribution>
+   </extension>
+   -->
 
 </plugin>

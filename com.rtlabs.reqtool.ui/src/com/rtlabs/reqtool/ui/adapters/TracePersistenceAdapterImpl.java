@@ -1,12 +1,13 @@
 package com.rtlabs.reqtool.ui.adapters;
 
+import org.eclipse.capra.core.adapters.TracePersistenceAdapter;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 
 import com.rtlabs.reqtool.model.requirements.Specification;
 
-public class TracePersistenceAdapter implements org.eclipse.app4mc.capra.core.adapters.TracePersistenceAdapter {
+public class TracePersistenceAdapterImpl implements TracePersistenceAdapter {
 
 	@Override
 	public EObject getTraceModel(EObject object) {

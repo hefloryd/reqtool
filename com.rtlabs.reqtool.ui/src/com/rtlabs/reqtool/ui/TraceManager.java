@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.eclipse.app4mc.capra.core.adapters.TraceMetamodelAdapter;
-import org.eclipse.app4mc.capra.core.adapters.TracePersistenceAdapter;
-import org.eclipse.app4mc.capra.core.handlers.ArtifactHandler;
-import org.eclipse.app4mc.capra.core.handlers.PriorityHandler;
-import org.eclipse.app4mc.capra.core.helpers.ExtensionPointHelper;
+import org.eclipse.capra.core.adapters.TraceMetaModelAdapter;
+import org.eclipse.capra.core.adapters.TracePersistenceAdapter;
+import org.eclipse.capra.core.handlers.ArtifactHandler;
+import org.eclipse.capra.core.handlers.PriorityHandler;
+import org.eclipse.capra.core.helpers.ExtensionPointHelper;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -21,7 +21,7 @@ public class TraceManager {
 
 	public void createTrace(Requirement requirement, Object data) {
 		
-		TraceMetamodelAdapter traceAdapter = ExtensionPointHelper.getTraceMetamodelAdapter().get();
+		TraceMetaModelAdapter traceAdapter = ExtensionPointHelper.getTraceMetamodelAdapter().get();
 		TracePersistenceAdapter persistenceAdapter = ExtensionPointHelper.getTracePersistenceAdapter().get();
 
 		EObject traceModel = persistenceAdapter.getTraceModel(requirement);

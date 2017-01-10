@@ -1,13 +1,13 @@
 package com.rtlabs.reqtool.ui.adapters;
 
-import org.eclipse.app4mc.capra.core.adapters.ArtifactMetaModelAdapter;
+import org.eclipse.capra.core.adapters.AbstractArtifactMetaModelAdapter;
 import org.eclipse.emf.ecore.EObject;
 
 import com.rtlabs.reqtool.model.requirements.Artifact;
 import com.rtlabs.reqtool.model.requirements.ArtifactContainer;
 import com.rtlabs.reqtool.model.requirements.RequirementsFactory;
 
-public class ArtifactMetaModelAdapterImpl implements ArtifactMetaModelAdapter {
+public class ArtifactMetaModelAdapterImpl extends AbstractArtifactMetaModelAdapter {
 
 	@Override
 	public EObject createModel() {
@@ -17,6 +17,10 @@ public class ArtifactMetaModelAdapterImpl implements ArtifactMetaModelAdapter {
 	@Override
 	public EObject createArtifact(EObject artifactModel, String artifactHandler, String artifactUri,
 			String artifactName) {
+		EObject existing = getArtifact(artifactModel, artifactHandler, artifactUri);
+		if (existing != null)
+			return existing;
+		
 		if (artifactModel instanceof ArtifactContainer) {
 			ArtifactContainer container = (ArtifactContainer) artifactModel;
 			Artifact artifact = RequirementsFactory.eINSTANCE.createArtifact();

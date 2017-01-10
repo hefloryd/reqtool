@@ -4,8 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.app4mc.capra.core.adapters.Connection;
-import org.eclipse.app4mc.capra.core.adapters.TraceMetamodelAdapter;
+import org.eclipse.capra.core.adapters.ArtifactMetaModelAdapter;
+import org.eclipse.capra.core.adapters.Connection;
+import org.eclipse.capra.core.adapters.TraceMetaModelAdapter;
+import org.eclipse.capra.core.handlers.ArtifactHandler;
+import org.eclipse.capra.core.handlers.IAnnotateArtifact;
+import org.eclipse.capra.core.helpers.ExtensionPointHelper;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
@@ -14,11 +18,12 @@ import org.eclipse.emf.edit.command.RemoveCommand;
 import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
 import org.eclipse.emf.edit.domain.EditingDomain;
 
+import com.rtlabs.reqtool.model.requirements.Artifact;
 import com.rtlabs.reqtool.model.requirements.RequirementsPackage;
 import com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals;
 import com.rtlabs.reqtool.model.requirements.Traceable;
 
-public class TraceMetaModelAdapter implements TraceMetamodelAdapter {
+public class TraceMetaModelAdapterImpl implements TraceMetaModelAdapter {
 
 	@Override
 	public EObject createModel() {
@@ -51,20 +56,28 @@ public class TraceMetaModelAdapter implements TraceMetamodelAdapter {
 		if (selection.get(1) instanceof Traceable)
 			child = (Traceable) selection.get(1);
 
-//		if (selection.get(1) instanceof Traceable) {
-//			child = (Traceable) selection.get(1);
-//		} else if (selection.get(1) instanceof Artifact) {
-//			Artifact wrapper = (Artifact) selection.get(1);
-//			ReqArtifactWrapper wrapper2 = RequirementsFactory.eINSTANCE.createReqArtifactWrapper();
-//			wrapper2.setArtifactWrapper(wrapper);
-//			child = wrapper2;			
-//		}		
-
 		if (parent == null || child == null)
 			return null;
 		
 		createTrace(parent, child);
+		annotateArtifact(child);
 		return null;
+	}
+
+	private void annotateArtifact(Traceable child) {
+		if (child instanceof Artifact) {
+			Artifact artifact = (Artifact) child;
+			ArtifactMetaModelAdapter adapter = ExtensionPointHelper.getArtifactWrapperMetaModelAdapter().get();
+			ArtifactHandler h = adapter.getArtifactHandlerInstance(artifact);
+			if (h instanceof IAnnotateArtifact) {
+				try {
+					IAnnotateArtifact handler = (IAnnotateArtifact) h;
+					handler.annotateArtifact(artifact, child.getParents().toString());
+				} catch (Exception e) {
+					// Ignore
+				}
+			}
+		}
 	}
 
 	public void createTrace(Traceable parent, Traceable child) {
