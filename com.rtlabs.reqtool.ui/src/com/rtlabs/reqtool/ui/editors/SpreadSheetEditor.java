@@ -381,53 +381,81 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 			public Object getDataValue(int columnIndex, int rowIndex) {
 				return specification.getRequirements().get(rowIndex).getName();
 			}
-	    	
-	    };
-	    DataLayer rowHeaderDataLayer = new DataLayer(rowHeaderDataProvider, 40, 20);
-	    ILayer rowHeaderLayer = new RowHeaderLayer(rowHeaderDataLayer, bodyLayerStack.getViewportLayer(), bodyLayerStack.getSelectionLayer());
-	    
-	    // build the corner layer stack
-	    ILayer cornerLayer = new CornerLayer(
-	    		new DataLayer(new DefaultCornerDataProvider(columnHeaderDataProvider, rowHeaderDataProvider)), 
-	            rowHeaderLayer, 
-	            columnHeaderLayer);
-	        
-	    
-	    // create the grid layer composed with the prior created layer stacks
-	    final GridLayer gridLayer = new GridLayer(bodyLayerStack.getViewportLayer(), columnHeaderLayer, rowHeaderLayer, cornerLayer);
-	    
-	    final NatTable natTable = new NatTable(parent, gridLayer, false);
-	    natTable.addConfiguration(new DefaultNatTableStyleConfiguration() {
-	    	{
-	            hAlign = HorizontalAlignmentEnum.LEFT;
-	    		cellPainter = new LineBorderDecorator(
-	    						new TextPainter(false, true, 5, true));
-	    	}
-	    });	    
-	    natTable.addConfiguration(new HeaderMenuConfiguration(natTable));
-	    natTable.addConfiguration(new EditorConfiguration());
-	    natTable.configure();
+		};
+		DataLayer rowHeaderDataLayer = new DataLayer(rowHeaderDataProvider, 40, 20);
+		ILayer rowHeaderLayer = new RowHeaderLayer(rowHeaderDataLayer, bodyLayerStack.getViewportLayer(), bodyLayerStack.getSelectionLayer());
+		
+		// Build the corner layer stack
+		ILayer cornerLayer = new CornerLayer(
+				new DataLayer(new DefaultCornerDataProvider(columnHeaderDataProvider, rowHeaderDataProvider)), 
+				rowHeaderLayer, 
+				columnHeaderLayer);
+			
+		
+		// Create the grid layer composed with the prior created layer stacks
+		final GridLayer gridLayer = new GridLayer(bodyLayerStack.getViewportLayer(), columnHeaderLayer, rowHeaderLayer, cornerLayer);
+		
+		final NatTable natTable = new NatTable(parent, gridLayer, false);
+		natTable.addConfiguration(new DefaultNatTableStyleConfiguration() {
+			{
+				hAlign = HorizontalAlignmentEnum.LEFT;
+				cellPainter = new LineBorderDecorator(new TextPainter(false, true, 5, true));
+			}
+		});
 
-	    // Fill remainder space with gridlines
-	    NatGridLayerPainter layerPainter = new NatGridLayerPainter(natTable);
-	    natTable.setLayerPainter(layerPainter);
+		natTable.addConfiguration(headerStyle());
+		natTable.addConfiguration(selectionStyle());
+		natTable.addConfiguration(new HeaderMenuConfiguration(natTable));
+		natTable.addConfiguration(new EditorConfiguration());
+		natTable.configure();
 
-	    // Listen to model changes, refresh UI
-	    specification.eAdapters().add(new EContentAdapter() {
+		// Fill remainder space with gridlines
+		natTable.setLayerPainter(new NatGridLayerPainter(natTable));
 
+		// Listen to model changes, refresh UI
+		specification.eAdapters().add(new EContentAdapter() {
 			@Override
 			public void notifyChanged(Notification notification) {
 				super.notifyChanged(notification);
 				natTable.refresh();
 			}
-	    	
-	    });
+		});
 
 		addDragSource(bodyLayerStack, natTable);
-	    addDropTarget(specification, bodyDataLayer, gridLayer, natTable);
+		addDropTarget(specification, bodyDataLayer, gridLayer, natTable);
 		addSelectionProvider(bodyDataProvider, bodyLayerStack);
-	    
-	    GridDataFactory.fillDefaults().grab(true, true).applyTo(natTable);
+		
+		GridDataFactory.fillDefaults().grab(true, true).applyTo(natTable);
+	}
+
+	private DefaultColumnHeaderStyleConfiguration headerStyle() {
+		DefaultColumnHeaderStyleConfiguration columnHeaderStyle = new DefaultColumnHeaderStyleConfiguration();
+		columnHeaderStyle.gradientFgColor =  GUIHelper.COLOR_GRAY;
+		columnHeaderStyle.gradientBgColor =  GUIHelper.COLOR_WHITE;
+		columnHeaderStyle.renderGridLines = true;
+		columnHeaderStyle.cellPainter = new GradientBackgroundPainter(new TextPainter(false, false), true);
+		return columnHeaderStyle;
+	}
+
+	private DefaultSelectionStyleConfiguration selectionStyle() {
+		DefaultSelectionStyleConfiguration selectionConfig = new DefaultSelectionStyleConfiguration() {
+
+			@Override
+			protected void configureSelectionStyle(IConfigRegistry configRegistry) {
+				Style cellStyle = new Style();
+				cellStyle.setAttributeValue(CellStyleAttributes.BACKGROUND_COLOR, this.selectionBgColor);
+				cellStyle.setAttributeValue(CellStyleAttributes.FOREGROUND_COLOR, this.selectionFgColor);
+				configRegistry.registerConfigAttribute(CellConfigAttributes.CELL_STYLE, cellStyle, DisplayMode.SELECT);
+			}
+
+			@Override
+			protected void configureHeaderHasSelectionStyle(IConfigRegistry configRegistry) {
+				super.configureHeaderHasSelectionStyle(configRegistry);
+				// Overwrite with and empty style
+				configRegistry.registerConfigAttribute(CellConfigAttributes.CELL_STYLE, new Style(), DisplayMode.SELECT, GridRegion.COLUMN_HEADER);
+			}
+		};
+		return selectionConfig;
 	}
 
 	private void addSelectionProvider(IRowDataProvider<EObject> bodyDataProvider, DefaultBodyLayerStack bodyLayerStack) {
@@ -438,7 +466,7 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 		getSite().setSelectionProvider(selectionProvider);
 	}
 
-	private void addDropTarget(final Specification specification, final DataLayer bodyDataLayer, final GridLayer gridLayer, final NatTable natTable) {
+	private void addDropTarget(final Specification spec, final DataLayer bodyDataLayer, final GridLayer gridLayer, final NatTable natTable) {
 		Transfer[] dropTransfers = new Transfer[] { 
 				org.eclipse.ui.part.EditorInputTransfer.getInstance(), 
 				org.eclipse.swt.dnd.FileTransfer.getInstance(),
@@ -449,12 +477,12 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 				org.eclipse.ui.part.ResourceTransfer.getInstance(),
 				org.eclipse.emf.edit.ui.dnd.LocalTransfer.getInstance()
 		};
-		SpreadSheetDropTargetListener dropTargetListener = new SpreadSheetDropTargetListener(natTable, gridLayer, specification, bodyDataLayer);
+		SpreadSheetDropTargetListener dropTargetListener = new SpreadSheetDropTargetListener(natTable, gridLayer, spec, bodyDataLayer);
 		natTable.addDropSupport(DND.DROP_COPY, dropTransfers, dropTargetListener);
 	}
 
 	private void addDragSource(DefaultBodyLayerStack bodyLayerStack, final NatTable natTable) {
-		Transfer[] dragTransfers = new Transfer[] { 
+		Transfer[] dragTransfers = { 
 				org.eclipse.emf.edit.ui.dnd.LocalTransfer.getInstance() 
 		};
 		SpreadSheetDragSourceListener dragSourceListener = new SpreadSheetDragSourceListener(bodyLayerStack.getSelectionLayer(), natTable);
