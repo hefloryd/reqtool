@@ -49,6 +49,8 @@ class Requirement extends Traceable {
 	Date created
 	Date modified
 	contains Person owner
+	RequirementType ^type
+	
 	container Specification specification opposite requirements
 	
 	derived String name get {
@@ -58,6 +60,12 @@ class Requirement extends Traceable {
 	op String toString() {
 		return name
 	}
+}
+
+enum RequirementType {
+	FREE_STYLE, 
+	GHERKIN,
+	USER_STORY
 }
 
 class Artifact extends Traceable {

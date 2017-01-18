@@ -85,6 +85,7 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 	public static final Object ID = "com.rtlabs.reqtool.ui.editor";
 
 	private static final String LABEL_BODY = "_BODY"; // BODY seems to affect entire bodyDataLayer
+	private static final String LABEL_TYPE = "TYPE";
 	private static final String LABEL_PRIORITY = "PRIORITY";
 	private static final String LABEL_STATE = "STATE";
 
@@ -167,6 +168,20 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 					LABEL_BODY);
 		}
 		
+		private void registerTypeEditor(IConfigRegistry configRegistry) {
+			ComboBoxCellEditor comboBoxCellEditor = new ComboBoxCellEditor(RequirementType.VALUES);
+			configRegistry.registerConfigAttribute(
+					EditConfigAttributes.CELL_EDITOR,
+					comboBoxCellEditor,
+					DisplayMode.EDIT,
+					LABEL_TYPE);
+			configRegistry.registerConfigAttribute(
+					EditConfigAttributes.CELL_EDITABLE_RULE,
+					IEditableRule.ALWAYS_EDITABLE,
+					DisplayMode.EDIT,
+					LABEL_TYPE);
+		}
+
 		private void registerPriorityEditor(IConfigRegistry configRegistry) {
 			ComboBoxCellEditor comboBoxCellEditor = new ComboBoxCellEditor(Priority.VALUES);
 			configRegistry.registerConfigAttribute(
@@ -319,6 +334,18 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 	    createModel();
 
 	    @SuppressWarnings("unchecked")
+		// property names of the Requirement class
+		String[] propertyNames = { "body", "type", "priority", "state", "parents", "children", "created" };
+
+		// mapping from property to label, needed for column header labels
+		Map<String, String> propertyToLabelMap = new HashMap<String, String>();
+		propertyToLabelMap.put("body", "Body");
+		propertyToLabelMap.put("type", "Type");
+		propertyToLabelMap.put("priority", "Priority");
+		propertyToLabelMap.put("state", "State");
+		propertyToLabelMap.put("parents", "Parents");
+		propertyToLabelMap.put("children", "Children");
+		propertyToLabelMap.put("created", "Created");
 		EList<EObject> requirements = (EList<EObject>) specification.eGet(Literals.SPECIFICATION__REQUIREMENTS);
 
 	    // build the body layer stack
@@ -335,21 +362,21 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 		};
 	    RowSelectionModel<EObject> selectionModel = new RowSelectionModel<EObject>(bodyLayerStack.getSelectionLayer(), bodyDataProvider, rowIdAccessor, false);
 		bodyLayerStack.getSelectionLayer().setSelectionModel(selectionModel);
-
-	    final ColumnOverrideLabelAccumulator columnLabelAccumulator = new ColumnOverrideLabelAccumulator(bodyDataLayer);
+		
+		ColumnOverrideLabelAccumulator columnLabelAccumulator = new ColumnOverrideLabelAccumulator(bodyDataLayer);
 		bodyDataLayer.setConfigLabelAccumulator(columnLabelAccumulator);
 		columnLabelAccumulator.registerColumnOverrides(0, LABEL_BODY);
-		columnLabelAccumulator.registerColumnOverrides(1, LABEL_PRIORITY);
-		columnLabelAccumulator.registerColumnOverrides(2, LABEL_STATE);		
+		columnLabelAccumulator.registerColumnOverrides(1, LABEL_TYPE);
+		columnLabelAccumulator.registerColumnOverrides(2, LABEL_PRIORITY);
+		columnLabelAccumulator.registerColumnOverrides(3, LABEL_STATE);		
 		
-	    // build the column header layer stack
-	    IDataProvider columnHeaderDataProvider = new DefaultColumnHeaderDataProvider(propertyNames, propertyToLabelMap); // TODO: Use EMF ItemProvider
-	    DataLayer columnHeaderDataLayer = new DataLayer(columnHeaderDataProvider);
-	    ILayer columnHeaderLayer = new ColumnHeaderLayer(columnHeaderDataLayer, bodyLayerStack.getViewportLayer(), bodyLayerStack.getSelectionLayer());
-	    
-	    // build the row header layer stack
-	    IDataProvider rowHeaderDataProvider =  new DefaultRowHeaderDataProvider(bodyDataProvider) {
-
+		// Build the column header layer stack
+		IDataProvider columnHeaderDataProvider = new DefaultColumnHeaderDataProvider(propertyNames, propertyToLabelMap); // TODO: Use EMF ItemProvider
+		DataLayer columnHeaderDataLayer = new DataLayer(columnHeaderDataProvider);
+		ILayer columnHeaderLayer = new ColumnHeaderLayer(columnHeaderDataLayer, bodyLayerStack.getViewportLayer(), bodyLayerStack.getSelectionLayer());
+		
+		// Build the row header layer stack
+		IDataProvider rowHeaderDataProvider =  new DefaultRowHeaderDataProvider(bodyDataProvider) {
 			@Override
 			public Object getDataValue(int columnIndex, int rowIndex) {
 				return specification.getRequirements().get(rowIndex).getName();
