@@ -1,15 +1,12 @@
 package com.rtlabs.reqtool.ui.editors;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
-import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.common.command.BasicCommandStack;
-import org.eclipse.emf.common.command.CommandStackListener;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
@@ -34,12 +31,13 @@ import org.eclipse.nebula.widgets.nattable.config.IEditableRule;
 import org.eclipse.nebula.widgets.nattable.data.IColumnAccessor;
 import org.eclipse.nebula.widgets.nattable.data.IDataProvider;
 import org.eclipse.nebula.widgets.nattable.data.IRowDataProvider;
-import org.eclipse.nebula.widgets.nattable.data.IRowIdAccessor;
 import org.eclipse.nebula.widgets.nattable.data.ListDataProvider;
+import org.eclipse.nebula.widgets.nattable.data.convert.DefaultDisplayConverter;
 import org.eclipse.nebula.widgets.nattable.edit.EditConfigAttributes;
 import org.eclipse.nebula.widgets.nattable.edit.editor.ComboBoxCellEditor;
 import org.eclipse.nebula.widgets.nattable.edit.editor.MultiLineTextCellEditor;
 import org.eclipse.nebula.widgets.nattable.edit.gui.ICellEditDialog;
+import org.eclipse.nebula.widgets.nattable.grid.GridRegion;
 import org.eclipse.nebula.widgets.nattable.grid.data.DefaultColumnHeaderDataProvider;
 import org.eclipse.nebula.widgets.nattable.grid.data.DefaultCornerDataProvider;
 import org.eclipse.nebula.widgets.nattable.grid.data.DefaultRowHeaderDataProvider;
@@ -50,17 +48,23 @@ import org.eclipse.nebula.widgets.nattable.grid.layer.RowHeaderLayer;
 import org.eclipse.nebula.widgets.nattable.layer.DataLayer;
 import org.eclipse.nebula.widgets.nattable.layer.ILayer;
 import org.eclipse.nebula.widgets.nattable.layer.cell.ColumnOverrideLabelAccumulator;
+import org.eclipse.nebula.widgets.nattable.layer.config.DefaultColumnHeaderStyleConfiguration;
 import org.eclipse.nebula.widgets.nattable.layer.stack.DefaultBodyLayerStack;
+import org.eclipse.nebula.widgets.nattable.painter.cell.BackgroundPainter;
+import org.eclipse.nebula.widgets.nattable.painter.cell.GradientBackgroundPainter;
 import org.eclipse.nebula.widgets.nattable.painter.cell.TextPainter;
 import org.eclipse.nebula.widgets.nattable.painter.cell.decorator.LineBorderDecorator;
+import org.eclipse.nebula.widgets.nattable.painter.cell.decorator.PaddingDecorator;
 import org.eclipse.nebula.widgets.nattable.painter.layer.NatGridLayerPainter;
 import org.eclipse.nebula.widgets.nattable.selection.RowSelectionModel;
 import org.eclipse.nebula.widgets.nattable.selection.RowSelectionProvider;
+import org.eclipse.nebula.widgets.nattable.selection.config.DefaultSelectionStyleConfiguration;
 import org.eclipse.nebula.widgets.nattable.style.CellStyleAttributes;
 import org.eclipse.nebula.widgets.nattable.style.DisplayMode;
 import org.eclipse.nebula.widgets.nattable.style.HorizontalAlignmentEnum;
 import org.eclipse.nebula.widgets.nattable.style.Style;
 import org.eclipse.nebula.widgets.nattable.ui.menu.HeaderMenuConfiguration;
+import org.eclipse.nebula.widgets.nattable.util.GUIHelper;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.Transfer;
@@ -76,11 +80,14 @@ import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.part.EditorPart;
 
 import com.rtlabs.reqtool.model.requirements.Priority;
+import com.rtlabs.reqtool.model.requirements.RequirementType;
 import com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals;
 import com.rtlabs.reqtool.model.requirements.Specification;
 import com.rtlabs.reqtool.model.requirements.State;
 import com.rtlabs.reqtool.model.requirements.provider.RequirementsItemProviderAdapterFactory;
-
+/**
+ * An editor which dispalys a table of requirements.
+ */
 public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvider {
 	public static final Object ID = "com.rtlabs.reqtool.ui.editor";
 
@@ -94,13 +101,14 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 
 	private Specification specification;
 	
-	public class EditorConfiguration extends AbstractRegistryConfiguration {
+	private static class EditorConfiguration extends AbstractRegistryConfiguration {
 
 		@Override
 		public void configureRegistry(IConfigRegistry configRegistry) {
 			//configRegistry.registerConfigAttribute(EditConfigAttributes.CELL_EDITABLE_RULE, IEditableRule.NEVER_EDITABLE);
-		
+
 			registerBodyEditor(configRegistry);
+			registerTypeEditor(configRegistry);
 			registerPriorityEditor(configRegistry);
 			registerStateEditor(configRegistry);
 		}
@@ -109,57 +117,84 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 			configRegistry.registerConfigAttribute(
 					EditConfigAttributes.CELL_EDITOR,
 					new MultiLineTextCellEditor(false),
-					DisplayMode.NORMAL,
+					DisplayMode.EDIT,
 					LABEL_BODY);
 
-            // configure the multi line text editor to always open in a
-            // subdialog
-            configRegistry.registerConfigAttribute(
-                    EditConfigAttributes.OPEN_IN_DIALOG,
-                    Boolean.FALSE,
-                    DisplayMode.EDIT,
-                    LABEL_BODY);
 
+			// Highelighting converter for normal mode
+			configRegistry.registerConfigAttribute(
+					CellConfigAttributes.DISPLAY_CONVERTER, 
+					new GherkinHighlighterConverter(),
+					DisplayMode.NORMAL, 
+					LABEL_BODY);			
+			
+			// Normal converter for edit mode
+			configRegistry.registerConfigAttribute(
+					CellConfigAttributes.DISPLAY_CONVERTER,
+					new DefaultDisplayConverter(),
+					DisplayMode.EDIT,
+					LABEL_BODY);
+			
+			// Configure the multi line text editor to always open in a subdialog
+//			configRegistry.registerConfigAttribute(
+//					EditConfigAttributes.OPEN_IN_DIALOG,
+//					Boolean.FALSE,
+//					DisplayMode.EDIT,
+//					LABEL_BODY);
+			
 			Style cellStyle = new Style();
-            cellStyle.setAttributeValue(
-                    CellStyleAttributes.HORIZONTAL_ALIGNMENT,
-                    HorizontalAlignmentEnum.LEFT);
-            configRegistry.registerConfigAttribute(
-                    CellConfigAttributes.CELL_STYLE,
-                    cellStyle,
-                    DisplayMode.NORMAL,
-                    LABEL_BODY);
-            configRegistry.registerConfigAttribute(
-                    CellConfigAttributes.CELL_STYLE,
-                    cellStyle,
-                    DisplayMode.EDIT,
-                    LABEL_BODY);
+			cellStyle.setAttributeValue(
+					CellStyleAttributes.HORIZONTAL_ALIGNMENT,
+					HorizontalAlignmentEnum.LEFT);
+			
+//			configRegistry.registerConfigAttribute(
+//					CellConfigAttributes.CELL_PAINTER,
+//					new RichTextMultiLineCellPainter(),
+//					DisplayMode.NORMAL,
+//					LABEL_BODY);
+			
+			configRegistry.registerConfigAttribute(
+					CellConfigAttributes.CELL_PAINTER,
+					new BackgroundPainter(new PaddingDecorator(new RichTextMultiLineCellPainter(), 2, 5, 2, 5)),
+					DisplayMode.NORMAL,
+					LABEL_BODY);
+			
+			configRegistry.registerConfigAttribute(
+					CellConfigAttributes.CELL_STYLE,
+					cellStyle,
+					DisplayMode.NORMAL,
+					LABEL_BODY);
+			configRegistry.registerConfigAttribute(
+					CellConfigAttributes.CELL_STYLE,
+					cellStyle,
+					DisplayMode.EDIT,
+					LABEL_BODY);
 
-            // configure custom dialog settings
-            Display display = Display.getCurrent();
-            Map<String, Object> editDialogSettings = new HashMap<String, Object>();
-            editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_TITLE, "My custom value");
-            editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_ICON, display.getSystemImage(SWT.ICON_WARNING));
-            editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_RESIZABLE, Boolean.TRUE);
+			// Configure custom dialog settings
+			Display display = Display.getCurrent();
+			Map<String, Object> editDialogSettings = new HashMap<>();
+			editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_TITLE, "My custom value");
+			editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_ICON, display.getSystemImage(SWT.ICON_WARNING));
+			editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_RESIZABLE, Boolean.TRUE);
 
-            Point size = new Point(400, 300);
-            editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_SIZE, size);
+			Point size = new Point(400, 300);
+			editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_SIZE, size);
 
-            int screenWidth = display.getBounds().width;
-            int screenHeight = display.getBounds().height;
-            Point location = new Point(
-                    (screenWidth / (2 * display.getMonitors().length)) - (size.x / 2),
-                    (screenHeight / 2) - (size.y / 2));
-            editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_LOCATION, location);
+			int screenWidth = display.getBounds().width;
+			int screenHeight = display.getBounds().height;
+			Point location = new Point(
+					(screenWidth / (2 * display.getMonitors().length)) - (size.x / 2),
+					(screenHeight / 2) - (size.y / 2));
+			editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_LOCATION, location);
 
-            // add custom message
-            editDialogSettings.put(ICellEditDialog.DIALOG_MESSAGE, "Enter some free text in here:");
+			// Add custom message
+			editDialogSettings.put(ICellEditDialog.DIALOG_MESSAGE, "Enter some free text in here:");
 
-            configRegistry.registerConfigAttribute(
-                    EditConfigAttributes.EDIT_DIALOG_SETTINGS,
-                    editDialogSettings,
-                    DisplayMode.EDIT,
-                    LABEL_BODY);
+			configRegistry.registerConfigAttribute(
+					EditConfigAttributes.EDIT_DIALOG_SETTINGS,
+					editDialogSettings,
+					DisplayMode.EDIT,
+					LABEL_BODY);
 
 			configRegistry.registerConfigAttribute(
 					EditConfigAttributes.CELL_EDITABLE_RULE,
@@ -199,21 +234,20 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 		private void registerStateEditor(IConfigRegistry configRegistry) {
 			ComboBoxCellEditor comboBoxCellEditor = new ComboBoxCellEditor(State.VALUES);
 			configRegistry.registerConfigAttribute(
-                    EditConfigAttributes.CELL_EDITOR,
-                    comboBoxCellEditor,
-                    DisplayMode.EDIT,
-                    LABEL_STATE);
+					EditConfigAttributes.CELL_EDITOR,
+					comboBoxCellEditor,
+					DisplayMode.EDIT,
+					LABEL_STATE);
 			configRegistry.registerConfigAttribute(
-                    EditConfigAttributes.CELL_EDITABLE_RULE,
-                    IEditableRule.ALWAYS_EDITABLE,
-                    DisplayMode.EDIT,
-                    LABEL_STATE);
+					EditConfigAttributes.CELL_EDITABLE_RULE,
+					IEditableRule.ALWAYS_EDITABLE,
+					DisplayMode.EDIT,
+					LABEL_STATE);
 		}
 
 	}
 
 	public SpreadSheetEditor() {
-		super();	
 		initializeEditingDomain();
 	}
 	
@@ -232,24 +266,18 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 
 		// Add a listener to set the most recent command's affected objects to be the selection of the viewer with focus.
 		//
-		commandStack.addCommandStackListener(new CommandStackListener() {
-			public void commandStackChanged(final EventObject event) {
-				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-					public void run() {
-						firePropertyChange(IEditorPart.PROP_DIRTY);
-					}
-				});
-			}
-		});
+		commandStack.addCommandStackListener(
+			event -> PlatformUI.getWorkbench().getDisplay().asyncExec(
+				() -> firePropertyChange(IEditorPart.PROP_DIRTY)));
 
 		// Create the editing domain with a special command stack.
 		//
-		editingDomain = new AdapterFactoryEditingDomain(adapterFactory, commandStack, new HashMap<Resource, Boolean>());
+		editingDomain = new AdapterFactoryEditingDomain(adapterFactory, commandStack, new HashMap<>());
 	}
 
 	@Override
 	public void doSave(IProgressMonitor monitor) {
-		final Map<Object, Object> saveOptions = new HashMap<Object, Object>();
+		final Map<Object, Object> saveOptions = new HashMap<>();
 		saveOptions.put(Resource.OPTION_SAVE_ONLY_IF_CHANGED, Resource.OPTION_SAVE_ONLY_IF_CHANGED_MEMORY_BUFFER);
 		saveOptions.put(Resource.OPTION_LINE_DELIMITER, Resource.OPTION_LINE_DELIMITER_UNSPECIFIED);
 		
@@ -257,7 +285,7 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 			// This is the method that gets invoked when the operation runs.
 			//
 			@Override
-			public void execute(IProgressMonitor monitor) {
+			public void execute(IProgressMonitor mon) {
 				// Save the resources to the file system.
 				//
 				for (Resource resource : editingDomain.getResourceSet().getResources()) {
@@ -314,26 +342,8 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 	
 	@Override
 	public void createPartControl(Composite parent) {
-	    parent.setLayout(new GridLayout());
+		parent.setLayout(new GridLayout());
 
-	    // property names of the Requirement class
-		String[] propertyNames = { "body", "priority", "state", "parents", "children", "created" };
-
-	    // mapping from property to label, needed for column header labels
-	    Map<String, String> propertyToLabelMap = new HashMap<String, String>();
-	    propertyToLabelMap.put("body", "Body");
-	    propertyToLabelMap.put("priority", "Priority");
-	    propertyToLabelMap.put("state", "State");
-	    propertyToLabelMap.put("parents", "Parents");
-	    propertyToLabelMap.put("children", "Children");
-	    propertyToLabelMap.put("created", "Created");
-
-	    IColumnAccessor<EObject> columnPropertyAccessor = new SpreadSheetColumnPropertyAccessor(adapterFactory, propertyNames);
-	    
-	    // Create/load the model
-	    createModel();
-
-	    @SuppressWarnings("unchecked")
 		// property names of the Requirement class
 		String[] propertyNames = { "body", "type", "priority", "state", "parents", "children", "created" };
 
@@ -346,21 +356,23 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 		propertyToLabelMap.put("parents", "Parents");
 		propertyToLabelMap.put("children", "Children");
 		propertyToLabelMap.put("created", "Created");
+
+		IColumnAccessor<EObject> columnPropertyAccessor = new SpreadSheetColumnPropertyAccessor(adapterFactory, propertyNames);
+		
+		// Create/load the model
+		createModel();
+
+		@SuppressWarnings("unchecked")
 		EList<EObject> requirements = (EList<EObject>) specification.eGet(Literals.SPECIFICATION__REQUIREMENTS);
 
-	    // build the body layer stack
-		IRowDataProvider<EObject> bodyDataProvider = new ListDataProvider<EObject>(requirements, columnPropertyAccessor);
-	    final DataLayer bodyDataLayer = new DataLayer(bodyDataProvider);
-	    DefaultBodyLayerStack bodyLayerStack = new DefaultBodyLayerStack(bodyDataLayer);
-	    
-	    // set row selection model with single selection enabled
-	    IRowIdAccessor<EObject> rowIdAccessor = new IRowIdAccessor<EObject>() {			
-			@Override
-			public Serializable getRowId(EObject object) {
-				return object.toString();
-			}
-		};
-	    RowSelectionModel<EObject> selectionModel = new RowSelectionModel<EObject>(bodyLayerStack.getSelectionLayer(), bodyDataProvider, rowIdAccessor, false);
+		// build the body layer stack
+		IRowDataProvider<EObject> bodyDataProvider = new ListDataProvider<>(requirements, columnPropertyAccessor);
+		final DataLayer bodyDataLayer = new DataLayer(bodyDataProvider);
+		DefaultBodyLayerStack bodyLayerStack = new DefaultBodyLayerStack(bodyDataLayer);
+		
+		// set row selection model with single selection enabled
+		RowSelectionModel<EObject> selectionModel = new RowSelectionModel<>(bodyLayerStack.getSelectionLayer(), 
+				bodyDataProvider, Object::toString, false);
 		bodyLayerStack.getSelectionLayer().setSelectionModel(selectionModel);
 		
 		ColumnOverrideLabelAccumulator columnLabelAccumulator = new ColumnOverrideLabelAccumulator(bodyDataLayer);
