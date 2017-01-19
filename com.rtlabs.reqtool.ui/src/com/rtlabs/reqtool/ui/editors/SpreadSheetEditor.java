@@ -8,7 +8,6 @@ import java.util.Map;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.common.command.BasicCommandStack;
 import org.eclipse.emf.common.notify.Notification;
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -80,8 +79,8 @@ import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.part.EditorPart;
 
 import com.rtlabs.reqtool.model.requirements.Priority;
+import com.rtlabs.reqtool.model.requirements.Requirement;
 import com.rtlabs.reqtool.model.requirements.RequirementType;
-import com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals;
 import com.rtlabs.reqtool.model.requirements.Specification;
 import com.rtlabs.reqtool.model.requirements.State;
 import com.rtlabs.reqtool.model.requirements.provider.RequirementsItemProviderAdapterFactory;
@@ -102,6 +101,12 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 	private Specification specification;
 	
 	private static class EditorConfiguration extends AbstractRegistryConfiguration {
+
+		private final IRowDataProvider<Requirement> dataProvider;
+		
+		public EditorConfiguration(IRowDataProvider<Requirement> dataProvider) {
+			this.dataProvider = dataProvider;
+		}
 
 		@Override
 		public void configureRegistry(IConfigRegistry configRegistry) {
@@ -124,7 +129,7 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 			// Highelighting converter for normal mode
 			configRegistry.registerConfigAttribute(
 					CellConfigAttributes.DISPLAY_CONVERTER, 
-					new GherkinHighlighterConverter(),
+					new HighlighterConverter(dataProvider),
 					DisplayMode.NORMAL, 
 					LABEL_BODY);			
 			
@@ -357,21 +362,20 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 		propertyToLabelMap.put("children", "Children");
 		propertyToLabelMap.put("created", "Created");
 
-		IColumnAccessor<EObject> columnPropertyAccessor = new SpreadSheetColumnPropertyAccessor(adapterFactory, propertyNames);
+		IColumnAccessor<Requirement> columnPropertyAccessor = new SpreadSheetColumnPropertyAccessor<>(adapterFactory, propertyNames);
 		
 		// Create/load the model
 		createModel();
 
-		@SuppressWarnings("unchecked")
-		EList<EObject> requirements = (EList<EObject>) specification.eGet(Literals.SPECIFICATION__REQUIREMENTS);
-
 		// build the body layer stack
-		IRowDataProvider<EObject> bodyDataProvider = new ListDataProvider<>(requirements, columnPropertyAccessor);
+		IRowDataProvider<Requirement> bodyDataProvider = new ListDataProvider<>(
+			specification.getRequirements(), columnPropertyAccessor);
+		
 		final DataLayer bodyDataLayer = new DataLayer(bodyDataProvider);
 		DefaultBodyLayerStack bodyLayerStack = new DefaultBodyLayerStack(bodyDataLayer);
 		
 		// set row selection model with single selection enabled
-		RowSelectionModel<EObject> selectionModel = new RowSelectionModel<>(bodyLayerStack.getSelectionLayer(), 
+		RowSelectionModel<Requirement> selectionModel = new RowSelectionModel<>(bodyLayerStack.getSelectionLayer(), 
 				bodyDataProvider, Object::toString, false);
 		bodyLayerStack.getSelectionLayer().setSelectionModel(selectionModel);
 		
@@ -418,7 +422,7 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 		natTable.addConfiguration(headerStyle());
 		natTable.addConfiguration(selectionStyle());
 		natTable.addConfiguration(new HeaderMenuConfiguration(natTable));
-		natTable.addConfiguration(new EditorConfiguration());
+		natTable.addConfiguration(new EditorConfiguration(bodyDataProvider));
 		natTable.configure();
 
 		// Fill remainder space with gridlines
@@ -470,8 +474,8 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 		return selectionConfig;
 	}
 
-	private void addSelectionProvider(IRowDataProvider<EObject> bodyDataProvider, DefaultBodyLayerStack bodyLayerStack) {
-		ISelectionProvider selectionProvider = new RowSelectionProvider<EObject>(
+	private <T extends EObject> void addSelectionProvider(IRowDataProvider<T> bodyDataProvider, DefaultBodyLayerStack bodyLayerStack) {
+		ISelectionProvider selectionProvider = new RowSelectionProvider<T>(
 				bodyLayerStack.getSelectionLayer(), 
 				bodyDataProvider, 
 				false);
