@@ -1,7 +1,12 @@
 package com.rtlabs.reqtool.ui.highlighter;
 
+import static java.util.stream.Collectors.toList;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -10,6 +15,8 @@ import com.google.common.collect.ImmutableList.Builder;
 import gherkin.AstBuilder;
 import gherkin.Parser;
 import gherkin.ParserException;
+import gherkin.ParserException.CompositeParserException;
+import gherkin.ParserException.UnexpectedTokenException;
 import gherkin.ast.Examples;
 import gherkin.ast.Feature;
 import gherkin.ast.GherkinDocument;
@@ -26,84 +33,81 @@ import gherkin.ast.Tag;
  */
 public class GherkinHighlighter {
 	
-//	markupConverter.registerMarkup("Feature", 
-//	"<span style=\"background-color:rgb(255, 0, 0)\"><strong><s><u>", "</u></s></strong></span>");
-
+	// Error markings with dotted underline. Does not seem to be working.
+	//	private static final String ERROR_START_TAG = "<span style=\"border-bottom: 1px dotted #ff0000\"><span style=\"border-bottom: 1px dotted #ff0000;\">";
+	//	private static final String ERROR_END_TAG = "</span></span>";
+	
+	private static final String ERROR_START_TAG = "<span style=\"background-color:rgb(255, 128, 128)\"><strong>";
+	private static final String ERROR_END_TAG = "</strong></span>";
+	
 	/**
 	 * @return the input as highlighted HTML. 
 	 */
-	public static String highlight(String text) {
+	public static String highlight(String rawText) {
 		// 
 		AstBuilder builder = new AstBuilder();
+		String[] text = rawText.split("\\r\\n|\\n\\r|\\n|\\r");
 
+		List<UnexpectedTokenException> errors = new ArrayList<>();
+		
 		try {
-			new Parser<>(builder).parse(text);
+			new Parser<>(builder).parse(rawText);
+		} catch (CompositeParserException exc) {
+			errors = exc.errors.stream()
+				.filter(err -> err instanceof UnexpectedTokenException)
+				.map(err -> (UnexpectedTokenException) err)
+				.collect(toList());
+		} catch (UnexpectedTokenException e) {
+			errors.add(e);
 		} catch (ParserException e) {
-			return null;
+			System.out.println();
+			// Ignore
+		}
+
+		// Using builder.getResult() instead of the result of Paser.parse gives
+		// a result even if there was an error
+		writeMarkup(text, builder.getResult());
+		
+		for (UnexpectedTokenException err : errors) {
+			int line = err.location.getLine() - 1;
+			Integer indent = err.receivedToken.line.indent();
+			text[line] = insertTag(text[line], 
+				err.location.getColumn() - 1,
+				err.receivedToken.line.getLineText(indent).length(),
+				ERROR_START_TAG, ERROR_END_TAG);
 		}
 		
-		// This gives a result even if there was an error
-		return highlight(text.split("\\r\\n|\\n\\r|\\n|\\r"), builder.getResult());
+		return String.join("<br/>", Arrays.asList(text));
 	}
 
-	// This class is used because we need to update the location from within a
-	// recursive method
-	private static class InputLocation {
-		int row;
-		int column;
-
-		public InputLocation(int row, int column) {
-			this.row = row;
-			this.column = column;
-		}
-	}
-
-	private static String highlight(String[] text, Node node) {
-		StringBuilder output = new StringBuilder();
-		InputLocation loc = new InputLocation(0, 0);
-
-		writeMarkup(text, loc, output, node);
-		
-		// Copy text after last highlighted word
-		output.append(text[loc.row], loc.column, text[loc.row].length());
-		loc.row++;
-		for (; loc.row < text.length; loc.row++) {
-			output.append("<br/>").append(text[loc.row]);
-		}
-		
-		return output.toString();
+	public static String insertTag(String target, int index, int length, String startTag, String endTag) {
+		StringBuilder b = new StringBuilder(target.length() + startTag.length() + endTag.length());
+		b.append(target, 0, index);
+		b.append(startTag);
+		b.append(target, index, index + length);
+		b.append(endTag);
+		b.append(target, index + length, target.length());
+		return b.toString();
 	}
 	
-	private static void writeMarkup(String[] text, InputLocation loc, StringBuilder output, Node node) {
 	
+	private static void writeMarkup(String[] input, Node node) {
 		String highlighted = getHighlighted(node);
-			
+
 		if (highlighted != null) {
-			// Copy end of row, and rows without keywords, to output
-			for (; loc.row < node.getLocation().getLine() - 1; loc.row++) {
-				output.append(text[loc.row], loc.column, text[loc.row].length());
-				output.append("<br/>");
-				loc.column = 0;
-			}
+			int line = node.getLocation().getLine() - 1;
 			
-			// Copy start of row before keywork to output
-			int endColumn = node.getLocation().getColumn() - 1;
-			output.append(text[loc.row], loc.column, endColumn);
-			loc.column += endColumn - loc.column;
-			
-			// Highlight and update column
-			output.append("<strong>");
-			output.append(highlighted);
-			output.append("</strong>");
-			
-			loc.column += highlighted.length();
+			input[line] = insertTag(input[line], 
+				node.getLocation().getColumn() - 1,
+				highlighted.length(),
+				"<strong>", "</strong>");
 		}
 		
 		for (Node child : getChildren(node)) {
-			writeMarkup(text, loc, output, child);
+			writeMarkup(input, child);
 		}
 	}
-
+	
 	private static String getHighlighted(Node node) {
 		if (node instanceof Feature) return ((Feature) node).getKeyword();
 		if (node instanceof Step) return ((Step) node).getKeyword();
@@ -120,7 +124,7 @@ public class GherkinHighlighter {
 	private static Collection<? extends Node> getChildren(Node node) {
 		if (node instanceof Feature) return ((Feature) node).getChildren();
 		if (node instanceof Step) return Optional.fromNullable(((Step) node).getArgument()).asSet();
-		if (node instanceof GherkinDocument) return ImmutableList.of(((GherkinDocument) node).getFeature());
+		if (node instanceof GherkinDocument) return Optional.fromNullable(((GherkinDocument) node).getFeature()).asSet();
 		
 		if (node instanceof ScenarioDefinition) {
 			Builder<Node> b = ImmutableList.<Node>builder().addAll(((ScenarioDefinition) node).getSteps());
@@ -138,5 +142,4 @@ public class GherkinHighlighter {
 		
 		return ImmutableList.of();
 	}
-
 }
