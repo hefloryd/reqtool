@@ -33,6 +33,7 @@ import org.eclipse.nebula.widgets.nattable.data.IRowDataProvider;
 import org.eclipse.nebula.widgets.nattable.data.ListDataProvider;
 import org.eclipse.nebula.widgets.nattable.data.convert.DefaultDisplayConverter;
 import org.eclipse.nebula.widgets.nattable.edit.EditConfigAttributes;
+import org.eclipse.nebula.widgets.nattable.edit.config.DialogErrorHandling;
 import org.eclipse.nebula.widgets.nattable.edit.editor.ComboBoxCellEditor;
 import org.eclipse.nebula.widgets.nattable.edit.editor.MultiLineTextCellEditor;
 import org.eclipse.nebula.widgets.nattable.edit.gui.ICellEditDialog;
@@ -139,28 +140,25 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 					new DefaultDisplayConverter(),
 					DisplayMode.EDIT,
 					LABEL_BODY);
-			
-			// Configure the multi line text editor to always open in a subdialog
-//			configRegistry.registerConfigAttribute(
-//					EditConfigAttributes.OPEN_IN_DIALOG,
-//					Boolean.FALSE,
-//					DisplayMode.EDIT,
-//					LABEL_BODY);
+
+			// Configure the multi line text editor to always open in a subdialog.
+			// NODE: Due to a bug in NatTable it is not possible to use this together with and error handler
+			// with allowCommit=true.
+			//
+			//			configRegistry.registerConfigAttribute(
+			//					EditConfigAttributes.OPEN_IN_DIALOG,
+			//					true,
+			//					DisplayMode.EDIT,
+			//					LABEL_BODY);
 			
 			Style cellStyle = new Style();
 			cellStyle.setAttributeValue(
 					CellStyleAttributes.HORIZONTAL_ALIGNMENT,
 					HorizontalAlignmentEnum.LEFT);
 			
-//			configRegistry.registerConfigAttribute(
-//					CellConfigAttributes.CELL_PAINTER,
-//					new RichTextMultiLineCellPainter(),
-//					DisplayMode.NORMAL,
-//					LABEL_BODY);
-			
 			configRegistry.registerConfigAttribute(
 					CellConfigAttributes.CELL_PAINTER,
-					new BackgroundPainter(new PaddingDecorator(new RichTextMultiLineCellPainter(), 2, 5, 2, 5)),
+					new BackgroundPainter(new PaddingDecorator(new RichTextMultiLineCellPainter(true), 2, 5, 2, 5)),
 					DisplayMode.NORMAL,
 					LABEL_BODY);
 			
@@ -175,10 +173,10 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 					DisplayMode.EDIT,
 					LABEL_BODY);
 
-			// Configure custom dialog settings
+			// Configure pop-up editor dialog settings
 			Display display = Display.getCurrent();
 			Map<String, Object> editDialogSettings = new HashMap<>();
-			editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_TITLE, "My custom value");
+			editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_TITLE, "Enter requirement description");
 			editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_ICON, display.getSystemImage(SWT.ICON_WARNING));
 			editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_RESIZABLE, Boolean.TRUE);
 
@@ -206,15 +204,28 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 					IEditableRule.ALWAYS_EDITABLE,
 					DisplayMode.EDIT,
 					LABEL_BODY);
+			
+			configRegistry.registerConfigAttribute(
+				EditConfigAttributes.VALIDATION_ERROR_HANDLER,
+				new DialogErrorHandling(true), 
+				DisplayMode.EDIT, 
+				LABEL_BODY);
+			
+			configRegistry.registerConfigAttribute(
+				EditConfigAttributes.DATA_VALIDATOR,
+				new RequirementTypeValidator(dataProvider),
+				DisplayMode.EDIT);
 		}
 		
 		private void registerTypeEditor(IConfigRegistry configRegistry) {
 			ComboBoxCellEditor comboBoxCellEditor = new ComboBoxCellEditor(RequirementType.VALUES);
+			
 			configRegistry.registerConfigAttribute(
 					EditConfigAttributes.CELL_EDITOR,
 					comboBoxCellEditor,
 					DisplayMode.EDIT,
 					LABEL_TYPE);
+			
 			configRegistry.registerConfigAttribute(
 					EditConfigAttributes.CELL_EDITABLE_RULE,
 					IEditableRule.ALWAYS_EDITABLE,

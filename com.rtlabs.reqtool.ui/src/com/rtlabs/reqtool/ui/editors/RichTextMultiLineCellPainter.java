@@ -14,18 +14,26 @@ import org.eclipse.swt.graphics.Rectangle;
  */
 class RichTextMultiLineCellPainter extends RichTextCellPainter {
 
-		public RichTextMultiLineCellPainter() {
-			super(false);
-		}
+	private final boolean adjustCellHeight;
 
-		@Override
-		public void paintCell(ILayerCell cell, GC gc, Rectangle bounds, IConfigRegistry configRegistry) {
-			setupGCFromConfig(gc, CellStyleUtil.getCellStyle(cell, configRegistry));
-			String htmlText = CellDisplayConversionUtils.convertDataType(cell, configRegistry);
+	public RichTextMultiLineCellPainter(boolean adjustCellHeight) {
+		super(false);
+		this.adjustCellHeight = adjustCellHeight;
+	}
 
+	@Override
+	public void paintCell(ILayerCell cell, GC gc, Rectangle bounds, IConfigRegistry configRegistry) {
+		// Much of this code is copied from the super class method. The difference
+		// is code that adjust the hight which is copied from TextCellPaiter.
+		
+		setupGCFromConfig(gc, CellStyleUtil.getCellStyle(cell, configRegistry));
+		String htmlText = CellDisplayConversionUtils.convertDataType(cell, configRegistry);
+
+		if (adjustCellHeight) {
+		
 			// Using a zero size rectangle for calculation results in a content related preferred size
 			this.richTextPainter.preCalculate(htmlText, gc, new Rectangle(0, 0, cell.getBounds().width, 0), false);
-
+	
 			// Subtract the top and bottom paragraph space
 			int contentHight = this.richTextPainter.getPreferredSize().y - 2 * this.richTextPainter.getParagraphSpace();
 			
@@ -37,12 +45,14 @@ class RichTextMultiLineCellPainter extends RichTextCellPainter {
 				int newHeight = contentHight + padding;
 				
 				// This doesn't seem necessary. But it kind of makes sense...
-				//  bounds.y = newHeight;
+				//  bounds.height = newHeight;
 				
 				// Use the same way of adjusting size as TextPainter.paintCel
 				cell.getLayer().doCommand(new RowResizeCommand(cell.getLayer(), cell.getRowPosition(), newHeight));
 			}
-			
-			super.paintCell(cell, gc, bounds, configRegistry);
 		}
+		
+		this.richTextPainter.paintHTML(htmlText, gc, new Rectangle(
+			bounds.x, bounds.y - richTextPainter.getParagraphSpace(), bounds.width, bounds.height));
 	}
+}

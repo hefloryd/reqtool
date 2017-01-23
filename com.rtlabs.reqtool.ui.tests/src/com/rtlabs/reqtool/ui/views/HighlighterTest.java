@@ -1,16 +1,18 @@
 package com.rtlabs.reqtool.ui.views;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.rtlabs.reqtool.ui.editors.HighlighterConverter.HighlightResult;
 import com.rtlabs.reqtool.ui.highlighter.GherkinHighlighter;
 
 public class HighlighterTest {
 	
 	@Test
 	public void basicSenario() {
-		String highlighted = GherkinHighlighter.highlight(
+		HighlightResult result = GherkinHighlighter.highlight(
 			"Feature: Refund item\n\n" +
 			"  Scenario: Jeff returns a faulty microwave\n" +
 			"    Given Jeff has bought a microwave for $100\n" +
@@ -24,12 +26,12 @@ public class HighlighterTest {
 			+ "    <strong>And </strong>he has a receipt<br/>"
 			+ "    <strong>When </strong>he returns the microwave<br/>"
 			+ "    <strong>Then </strong>Jeff should be refunded $100",
-			highlighted);
+			result.result);
 	}
 	
 	@Test
 	public void senarioOutline() {
-		String highlighted = GherkinHighlighter.highlight(
+		HighlightResult result = GherkinHighlighter.highlight(
 			"Feature: Refund item\n\n" +
 			"Scenario Outline: eating\n" +
 			"  Given there are <start> cucumbers\n" +
@@ -46,12 +48,12 @@ public class HighlighterTest {
 				+ "  <strong>Then </strong>I should have <left> cucumbers<br/><br/>"
 				+ "  <strong>Examples</strong>:<br/>"
 				+ "    Some example.",
-				highlighted);
+				result.result);
 	}
 	
 	@Test
 	public void error() {
-		String highlighted = GherkinHighlighter.highlight(
+		HighlightResult result = GherkinHighlighter.highlight(
 			"Feature: Refund item\n\n" +
 			"Scenario Outline: eating\n" +
 			"  Given there are <start> cucumbers\n" +
@@ -65,7 +67,10 @@ public class HighlighterTest {
 			+ "  <strong>When </strong>I eat <eat> cucumbers<br/>"
 			+ "  <strong>Then </strong>I should have <left> cucumbers<br/><br/>"
 			+ "  <span style=\"background-color:rgb(255, 128, 128)\"><strong>UNEXPECTED_TOKEN</strong></span>",
-				highlighted);
+			result.result);
+		
+		assertEquals(1, result.errors.size());
+		assertTrue(result.errors.get(0).contains("UNEXPECTED_TOKEN"));
 	}
 
 }

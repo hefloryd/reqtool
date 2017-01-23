@@ -2,7 +2,6 @@ package com.rtlabs.reqtool.ui.highlighter;
 
 import static java.util.stream.Collectors.toList;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,6 +10,7 @@ import java.util.List;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.rtlabs.reqtool.ui.editors.HighlighterConverter.HighlightResult;
 
 import gherkin.AstBuilder;
 import gherkin.Parser;
@@ -43,32 +43,34 @@ public class GherkinHighlighter {
 	/**
 	 * @return the input as highlighted HTML. 
 	 */
-	public static String highlight(String rawText) {
+	public static HighlightResult highlight(String rawText) {
 		// 
 		AstBuilder builder = new AstBuilder();
 		String[] text = rawText.split("\\r\\n|\\n\\r|\\n|\\r");
 
-		List<UnexpectedTokenException> errors = new ArrayList<>();
+		List<UnexpectedTokenException> unexpectedTokens = Collections.emptyList();
+		List<ParserException> errors = Collections.emptyList();
 		
 		try {
 			new Parser<>(builder).parse(rawText);
 		} catch (CompositeParserException exc) {
-			errors = exc.errors.stream()
+			errors = exc.errors;
+			unexpectedTokens = exc.errors.stream()
 				.filter(err -> err instanceof UnexpectedTokenException)
 				.map(err -> (UnexpectedTokenException) err)
 				.collect(toList());
 		} catch (UnexpectedTokenException e) {
-			errors.add(e);
+			unexpectedTokens = ImmutableList.of(e);
 		} catch (ParserException e) {
-			System.out.println();
-			// Ignore
+			errors = ImmutableList.of(e);
 		}
 
 		// Using builder.getResult() instead of the result of Paser.parse gives
 		// a result even if there was an error
 		writeMarkup(text, builder.getResult());
-		
-		for (UnexpectedTokenException err : errors) {
+
+		// Highlight errors in output
+		for (UnexpectedTokenException err : unexpectedTokens) {
 			int line = err.location.getLine() - 1;
 			Integer indent = err.receivedToken.line.indent();
 			text[line] = insertTag(text[line], 
@@ -77,7 +79,9 @@ public class GherkinHighlighter {
 				ERROR_START_TAG, ERROR_END_TAG);
 		}
 		
-		return String.join("<br/>", Arrays.asList(text));
+		return new HighlightResult(
+			String.join("<br/>", Arrays.asList(text)),
+			errors.stream().map(Exception::getMessage).collect(toList()));
 	}
 
 	public static String insertTag(String target, int index, int length, String startTag, String endTag) {
@@ -112,9 +116,7 @@ public class GherkinHighlighter {
 		if (node instanceof Feature) return ((Feature) node).getKeyword();
 		if (node instanceof Step) return ((Step) node).getKeyword();
 		if (node instanceof ScenarioDefinition) return ((ScenarioDefinition) node).getKeyword();
-		if (node instanceof Examples) {
-			return ((Examples) node).getKeyword();
-		}
+		if (node instanceof Examples) return ((Examples) node).getKeyword();
 		if (node instanceof Tag) return ((Tag) node).getName();
 		if (node instanceof GherkinDocument) return null;
 		

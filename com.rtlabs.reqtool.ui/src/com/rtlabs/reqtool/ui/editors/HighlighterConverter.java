@@ -1,6 +1,7 @@
 package com.rtlabs.reqtool.ui.editors;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -26,21 +27,31 @@ public class HighlighterConverter implements IDisplayConverter {
 
 	@Override
 	public Object canonicalToDisplayValue(ILayerCell cell, IConfigRegistry configRegistry, Object text) {
-		// Strip leading empty lines since HTML renderer seems to crash because of them
+		// Strip leading empty lines since the HTML renderer seems to crash because of them
 		String escapedText = StringEscapeUtils.escapeHtml(StringUtils.stripStart((String) text, "\n\r"));
 		
 		Requirement showedReq = dataProvider.getRowObject(cell.getRowIndex());
 		
-		String highlightedText = null;
+		HighlightResult highlightResult = null;
 		
 		if (showedReq.getType() == RequirementType.GHERKIN) {
-			highlightedText = GherkinHighlighter.highlight(escapedText);
+			highlightResult = GherkinHighlighter.highlight(escapedText);
 		}
 		
-		if (highlightedText == null) {
+		if (highlightResult == null) {
 			return String.join("<br/>", Arrays.asList(escapedText.split("\\r\\n|\\n\\r|\\n|\\r")));
 		} else {
-			return highlightedText;
+			return highlightResult.result;
+		}
+	}
+	
+	public static class HighlightResult {
+		public final List<String> errors;
+		public final String result;
+		
+		public HighlightResult(String result, List<String> errors) {
+			this.result = result;
+			this.errors = errors;
 		}
 	}
 
