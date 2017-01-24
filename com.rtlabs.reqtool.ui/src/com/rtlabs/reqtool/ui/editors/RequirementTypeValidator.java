@@ -8,6 +8,7 @@ import com.rtlabs.reqtool.model.requirements.Requirement;
 import com.rtlabs.reqtool.model.requirements.RequirementType;
 import com.rtlabs.reqtool.ui.editors.HighlighterConverter.HighlightResult;
 import com.rtlabs.reqtool.ui.highlighter.GherkinHighlighter;
+import com.rtlabs.reqtool.ui.highlighter.UserStoryHighlighter;
 
 /**
  * Validates the body of a requirment according to the {@link RequirementType} of that requirement.
@@ -22,6 +23,8 @@ public class RequirementTypeValidator extends DataValidator {
 
 	@Override
 	public boolean validate(int columnIndex, int rowIndex, Object newValue) {
+		
+		if (newValue == null) return true;
 
 		Requirement showedReq = dataProvider.getRowObject(rowIndex);
 		
@@ -29,6 +32,8 @@ public class RequirementTypeValidator extends DataValidator {
 		
 		if (showedReq.getType() == RequirementType.GHERKIN) {
 			highlightResult = GherkinHighlighter.highlight((String) newValue);
+		} else if (showedReq.getType() == RequirementType.USER_STORY) {
+			highlightResult = UserStoryHighlighter.highlight((String) newValue);
 		}
 		
 		if (highlightResult == null) {

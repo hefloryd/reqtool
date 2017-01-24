@@ -44,7 +44,6 @@ public class GherkinHighlighter {
 	 * @return the input as highlighted HTML. 
 	 */
 	public static HighlightResult highlight(String rawText) {
-		// 
 		AstBuilder builder = new AstBuilder();
 		String[] text = rawText.split("\\r\\n|\\n\\r|\\n|\\r");
 
@@ -113,12 +112,12 @@ public class GherkinHighlighter {
 	}
 	
 	private static String getHighlighted(Node node) {
-		if (node instanceof Feature) return ((Feature) node).getKeyword();
-		if (node instanceof Step) return ((Step) node).getKeyword();
+		if (node instanceof Feature)            return ((Feature) node).getKeyword();
+		if (node instanceof Step)               return ((Step) node).getKeyword();
 		if (node instanceof ScenarioDefinition) return ((ScenarioDefinition) node).getKeyword();
-		if (node instanceof Examples) return ((Examples) node).getKeyword();
-		if (node instanceof Tag) return ((Tag) node).getName();
-		if (node instanceof GherkinDocument) return null;
+		if (node instanceof Examples)           return ((Examples) node).getKeyword();
+		if (node instanceof Tag)                return ((Tag) node).getName();
+		if (node instanceof GherkinDocument)    return null;
 		
 		return null;
 	}
@@ -131,6 +130,7 @@ public class GherkinHighlighter {
 		if (node instanceof ScenarioDefinition) {
 			Builder<Node> b = ImmutableList.<Node>builder().addAll(((ScenarioDefinition) node).getSteps());
 			if (node instanceof ScenarioOutline) {
+				b.addAll(((ScenarioOutline) node).getTags());
 				b.addAll(((ScenarioOutline) node).getExamples());
 			}
 			return b.build();

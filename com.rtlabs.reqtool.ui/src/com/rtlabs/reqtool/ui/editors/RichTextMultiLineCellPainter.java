@@ -23,8 +23,8 @@ class RichTextMultiLineCellPainter extends RichTextCellPainter {
 
 	@Override
 	public void paintCell(ILayerCell cell, GC gc, Rectangle bounds, IConfigRegistry configRegistry) {
-		// Much of this code is copied from the super class method. The difference
-		// is code that adjust the hight which is copied from TextCellPaiter.
+		// Much of the code in this method is copied from the super class method. The difference
+		// is code that adjust the hight. That code is copied from TextCellPaiter.
 		
 		setupGCFromConfig(gc, CellStyleUtil.getCellStyle(cell, configRegistry));
 		String htmlText = CellDisplayConversionUtils.convertDataType(cell, configRegistry);
@@ -32,10 +32,10 @@ class RichTextMultiLineCellPainter extends RichTextCellPainter {
 		if (adjustCellHeight) {
 		
 			// Using a zero size rectangle for calculation results in a content related preferred size
-			this.richTextPainter.preCalculate(htmlText, gc, new Rectangle(0, 0, cell.getBounds().width, 0), false);
+			richTextPainter.preCalculate(htmlText, gc, new Rectangle(0, 0, cell.getBounds().width, 0), false);
 	
 			// Subtract the top and bottom paragraph space
-			int contentHight = this.richTextPainter.getPreferredSize().y - 2 * this.richTextPainter.getParagraphSpace();
+			int contentHight = richTextPainter.getPreferredSize().y - 2 * this.richTextPainter.getParagraphSpace();
 			
 			// Adjustment value choosen by trying it in the GUI
 			contentHight -= 20;
@@ -52,7 +52,7 @@ class RichTextMultiLineCellPainter extends RichTextCellPainter {
 			}
 		}
 		
-		this.richTextPainter.paintHTML(htmlText, gc, new Rectangle(
+		richTextPainter.paintHTML(htmlText, gc, new Rectangle(
 			bounds.x, bounds.y - richTextPainter.getParagraphSpace(), bounds.width, bounds.height));
 	}
 }

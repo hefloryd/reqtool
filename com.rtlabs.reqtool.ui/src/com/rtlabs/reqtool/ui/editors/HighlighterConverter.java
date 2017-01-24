@@ -10,9 +10,11 @@ import org.eclipse.nebula.widgets.nattable.data.IRowDataProvider;
 import org.eclipse.nebula.widgets.nattable.data.convert.IDisplayConverter;
 import org.eclipse.nebula.widgets.nattable.layer.cell.ILayerCell;
 
+import com.google.common.collect.ImmutableList;
 import com.rtlabs.reqtool.model.requirements.Requirement;
 import com.rtlabs.reqtool.model.requirements.RequirementType;
 import com.rtlabs.reqtool.ui.highlighter.GherkinHighlighter;
+import com.rtlabs.reqtool.ui.highlighter.UserStoryHighlighter;
 
 /**
  * A display converter which performs Gherkin syntax highlighting.
@@ -27,6 +29,8 @@ public class HighlighterConverter implements IDisplayConverter {
 
 	@Override
 	public Object canonicalToDisplayValue(ILayerCell cell, IConfigRegistry configRegistry, Object text) {
+		if (text == null) return null;
+		
 		// Strip leading empty lines since the HTML renderer seems to crash because of them
 		String escapedText = StringEscapeUtils.escapeHtml(StringUtils.stripStart((String) text, "\n\r"));
 		
@@ -36,6 +40,8 @@ public class HighlighterConverter implements IDisplayConverter {
 		
 		if (showedReq.getType() == RequirementType.GHERKIN) {
 			highlightResult = GherkinHighlighter.highlight(escapedText);
+		} else if (showedReq.getType() == RequirementType.USER_STORY) {
+			highlightResult = UserStoryHighlighter.highlight(escapedText);
 		}
 		
 		if (highlightResult == null) {
@@ -46,12 +52,16 @@ public class HighlighterConverter implements IDisplayConverter {
 	}
 	
 	public static class HighlightResult {
-		public final List<String> errors;
 		public final String result;
+		public final List<String> errors;
 		
 		public HighlightResult(String result, List<String> errors) {
 			this.result = result;
 			this.errors = errors;
+		}
+
+		public HighlightResult(String result) {
+			this(result, ImmutableList.of());
 		}
 	}
 
