@@ -5,10 +5,14 @@ import java.util.List;
 
 import com.rtlabs.reqtool.model.requirements.Artifact;
 import com.rtlabs.reqtool.model.requirements.Requirement;
+import com.rtlabs.reqtool.model.requirements.RequirementType;
 import com.rtlabs.reqtool.model.requirements.RequirementsFactory;
 import com.rtlabs.reqtool.model.requirements.Specification;
 import com.rtlabs.reqtool.model.requirements.Traceable;
 
+/**
+ * Singleton which creates and stores {@link Requirement} test objects.
+ */
 public class RequirementService {
 
 	private static RequirementService INSTANCE;
@@ -34,69 +38,92 @@ public class RequirementService {
 		req.setIdentifier(1);
 		req.setBody ("The motor shall contain an object database");
 		requirements.add(req);
-
+		
 		req = RequirementsFactory.eINSTANCE.createRequirement();
 		req.setIdentifier(2);
-		req.setBody ("Objects in the object database shall have the following attributes:\n * name [unique identifier]\n * Datatype\n * value ");
+		req.setType(RequirementType.USER_STORY);
+		req.setBody ("As a motor I want to contain an object database so that my objects are databased.");
 		requirements.add(req);
 
 		req = RequirementsFactory.eINSTANCE.createRequirement();
 		req.setIdentifier(3);
-		req.setBody ("The object database shall support the following datatypes:\n * BOOLEAN\n * FLOAT\n * UINT32\n * STRING\n");
+		req.setType(RequirementType.GHERKIN);
+		req.setBody (
+			"Feature: Refund item\n"
+			+ "Description, description, description, description, description.\n"
+			+ "Scenario: eating\n"
+			+ "  Given there are <start> cucumbers\n"
+			+ "  When I eat <eat> cucumbers\n"
+			+ "  Then I should have <left> cucumbers\n"
+			+ "Scenario: drinking\n"
+			+ "  Given there are <start> cucumbers\n"
+			+ "  When I drink <eat> cucumbers\n"
+			+ "  Then I should have <left> cucumbers\n");
 		requirements.add(req);
 
 		req = RequirementsFactory.eINSTANCE.createRequirement();
 		req.setIdentifier(4);
-		req.setBody ("It shall be possible to set object values via a REST API");
+		req.setBody ("Objects in the object database shall have the following attributes:\n * name [unique identifier]\n * Datatype\n * value ");
 		requirements.add(req);
 
 		req = RequirementsFactory.eINSTANCE.createRequirement();
 		req.setIdentifier(5);
-		req.setBody ("It shall be possible to get object values via a REST API");
+		req.setBody ("The object database shall support the following datatypes:\n * BOOLEAN\n * FLOAT\n * UINT32\n * STRING\n");
 		requirements.add(req);
+
 
 		req = RequirementsFactory.eINSTANCE.createRequirement();
 		req.setIdentifier(6);
-		req.setBody ("It shall be possible to set object values via a websocket.");
+		req.setBody ("It shall be possible to set object values via a REST API");
 		requirements.add(req);
 
 		req = RequirementsFactory.eINSTANCE.createRequirement();
 		req.setIdentifier(7);
-		req.setBody ("It shall be possible to get object values via a websocket.");
+		req.setBody ("It shall be possible to get object values via a REST API");
 		requirements.add(req);
 
 		req = RequirementsFactory.eINSTANCE.createRequirement();
 		req.setIdentifier(8);
-		req.setBody ("The REST api shall be accessible at http://<motor>/api/params");
+		req.setBody ("It shall be possible to set object values via a websocket.");
 		requirements.add(req);
 
 		req = RequirementsFactory.eINSTANCE.createRequirement();
 		req.setIdentifier(9);
+		req.setBody ("It shall be possible to get object values via a websocket.");
+		requirements.add(req);
+
+		req = RequirementsFactory.eINSTANCE.createRequirement();
+		req.setIdentifier(10);
+		req.setBody ("The REST api shall be accessible at http://<motor>/api/params");
+		requirements.add(req);
+
+		req = RequirementsFactory.eINSTANCE.createRequirement();
+		req.setIdentifier(11);
 		req.setBody ("The REST query for setting values shall be ?name=<objectname>&value=<objectvalue> with HTTP method PUT\n");
 		requirements.add(req);
 
 		req = RequirementsFactory.eINSTANCE.createRequirement();
-		req.setIdentifier (10);
+		req.setIdentifier (12);
 		req.setBody ("The REST query for getting values shall be ?name=<objectname> with HTTP method GET\n");
 		requirements.add(req);
 
 		req = RequirementsFactory.eINSTANCE.createRequirement();
-		req.setIdentifier (11);
+		req.setIdentifier (13);
 		req.setBody ("The REST query response when getting a value shall be a JSON message of the form {\"name\":\"<objectname>\",\"value\":<objectvalue>}.");
 		requirements.add(req);
 
 		req = RequirementsFactory.eINSTANCE.createRequirement();
-		req.setIdentifier (12);
+		req.setIdentifier (14);
 		req.setBody ("The websocket request for setting an object value shall be a JSON message of the format {\"op\":\"set\",\"name\":\"<objectname>\",\"value\":<objectvalue>}\n");
 		requirements.add(req);
 
 		req = RequirementsFactory.eINSTANCE.createRequirement();
-		req.setIdentifier (13);
+		req.setIdentifier (15);
 		req.setBody ("The websocket request for getting an object value shall be a JSON message of the format {\"op\":\"get\",\"name\":\"<objectname>\"}");
 		requirements.add(req);
 
 		req = RequirementsFactory.eINSTANCE.createRequirement();
-		req.setIdentifier (14);
+		req.setIdentifier (16);
 		req.setBody ("The websocket response for getting an object value shall be a JSON message of the format {\"name\":\"<objectname>\",\"value\":<objectvalue>}");
 		requirements.add(req);
 		
