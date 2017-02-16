@@ -1,0 +1,26 @@
+<%@ jet package="com.rtlabs.reqtool.ui.test_case_generation"
+        class="GherkinTestCaseGeneratorImpl"
+        imports="
+            gherkin.ast.ScenarioDefinition
+            gherkin.ast.Step
+            "
+%>
+<% GherkinTestCaseGeneratorHelper h = (GherkinTestCaseGeneratorHelper) argument; %>
+*** Settings ***
+Documentation     <%= h.testCaseName() %>
+...
+<% for (String descriptionLine : h.testCaseDescription()) { %>
+...               <%= descriptionLine %>
+<% } %>
+
+Library           <%= h.libraryName() %>
+
+*** Test Cases ***
+
+<% for (ScenarioDefinition senario : h.senarios()) { %>
+<%= senario.getName() %>
+<% for (Step step : senario.getSteps()) { %>
+  <%= step.getKeyword() %><%= step.getText() %>
+<% } %>
+    
+<% } %>
