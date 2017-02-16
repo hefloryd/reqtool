@@ -7,10 +7,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.core.databinding.validation.ValidationStatus;
+import org.eclipse.core.runtime.IStatus;
+
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.rtlabs.reqtool.ui.editors.HighlighterConverter.HighlightResult;
+import com.rtlabs.reqtool.util.ReqtoolUtil;
+import com.rtlabs.reqtool.util.Result;
 
 import gherkin.AstBuilder;
 import gherkin.Parser;
@@ -29,7 +33,7 @@ import gherkin.ast.Tag;
 /**
  * Performs syntax highlighting for the Gherkin language. Uses the Gherkin project parser.
  * 
- * The parser is retreived from https://github.com/cucumber/cucumber/tree/master/gherkin .
+ * The parser is retrieved from https://github.com/cucumber/cucumber/tree/master/gherkin .
  */
 public class GherkinHighlighter {
 	
@@ -40,18 +44,27 @@ public class GherkinHighlighter {
 	private static final String ERROR_START_TAG = "<span style=\"background-color:rgb(255, 128, 128)\"><strong>";
 	private static final String ERROR_END_TAG = "</strong></span>";
 	
-	/**
-	 * @return the input as highlighted HTML. 
-	 */
-	public static HighlightResult highlight(String rawText) {
-		AstBuilder builder = new AstBuilder();
-		String[] text = rawText.split("\\r\\n|\\n\\r|\\n|\\r");
+	public static class CompileResult extends Result<GherkinDocument> {
+		private List<UnexpectedTokenException> exceptions;
 
+		public CompileResult(GherkinDocument result, List<IStatus> statuses, List<UnexpectedTokenException> exceptions) {
+			super(result, statuses);
+			this.exceptions = exceptions;
+		}
+
+		public List<UnexpectedTokenException> getExceptions() {
+			return exceptions;
+		}
+	}
+	
+	
+	public static CompileResult compile(String text) {
+		AstBuilder builder = new AstBuilder();
 		List<UnexpectedTokenException> unexpectedTokens = Collections.emptyList();
 		List<ParserException> errors = Collections.emptyList();
 		
 		try {
-			new Parser<>(builder).parse(rawText);
+			new Parser<>(builder).parse(text);
 		} catch (CompositeParserException exc) {
 			errors = exc.errors;
 			unexpectedTokens = exc.errors.stream()
@@ -63,13 +76,29 @@ public class GherkinHighlighter {
 		} catch (ParserException e) {
 			errors = ImmutableList.of(e);
 		}
+		List<IStatus> errorMessages = errors.stream()
+			.map(Exception::getMessage)
+			.map(ValidationStatus::error)
+			.collect(toList());
+		
+		return new CompileResult(builder.getResult(), errorMessages, unexpectedTokens);
+	}
+	
+	/**
+	 * @return the input as highlighted HTML. 
+	 */
+	public static Result<String> highlight(String rawText) {
 
+		String[] text = ReqtoolUtil.splitLines(rawText);
+
+		CompileResult compileResult = compile(rawText);
+		
 		// Using builder.getResult() instead of the result of Paser.parse gives
 		// a result even if there was an error
-		writeMarkup(text, builder.getResult());
+		writeMarkup(text, compileResult.getResult());
 
 		// Highlight errors in output
-		for (UnexpectedTokenException err : unexpectedTokens) {
+		for (UnexpectedTokenException err : compileResult.getExceptions()) {
 			int line = err.location.getLine() - 1;
 			Integer indent = err.receivedToken.line.indent();
 			text[line] = insertTag(text[line], 
@@ -78,9 +107,7 @@ public class GherkinHighlighter {
 				ERROR_START_TAG, ERROR_END_TAG);
 		}
 		
-		return new HighlightResult(
-			String.join("<br/>", Arrays.asList(text)),
-			errors.stream().map(Exception::getMessage).collect(toList()));
+		return new Result<>(String.join("<br/>", Arrays.asList(text)), compileResult.getStatuses());
 	}
 
 	public static String insertTag(String target, int index, int length, String startTag, String endTag) {

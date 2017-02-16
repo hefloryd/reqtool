@@ -5,14 +5,14 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.rtlabs.reqtool.ui.editors.HighlighterConverter.HighlightResult;
 import com.rtlabs.reqtool.ui.highlighter.GherkinHighlighter;
 import com.rtlabs.reqtool.ui.highlighter.UserStoryHighlighter;
+import com.rtlabs.reqtool.util.Result;
 
 public class HighlighterTest {
 	@Test
 	public void gherkinSenario() {
-		HighlightResult result = GherkinHighlighter.highlight(
+		Result<String> result = GherkinHighlighter.highlight(
 			"Feature: Refund item\n"
 			+ "\n"
 			+ "  Scenario: Jeff returns a faulty microwave\n"
@@ -28,12 +28,12 @@ public class HighlighterTest {
 			+ "    <strong>And </strong>he has a receipt<br/>"
 			+ "    <strong>When </strong>he returns the microwave<br/>"
 			+ "    <strong>Then </strong>Jeff should be refunded $100",
-			result.result);
+			result.getResult());
 	}
 	
 	@Test
 	public void gherkinSenarioOutline() {
-		HighlightResult result = GherkinHighlighter.highlight(
+		Result<String> result = GherkinHighlighter.highlight(
 			"Feature: Refund item\n"
 			+ "\n"
 			+ "Scenario Outline: eating\n"
@@ -53,12 +53,12 @@ public class HighlighterTest {
 			+ "<br/>"
 			+ "  <strong>Examples</strong>:<br/>"
 			+ "    Some example.",
-			result.result);
+			result.getResult());
 	}
 	
 	@Test
 	public void gherkinError() {
-		HighlightResult result = GherkinHighlighter.highlight(
+		Result<String> result = GherkinHighlighter.highlight(
 			"Feature: Refund item\n"
 			+ "\n"
 			+ "Scenario Outline: eating\n"
@@ -76,36 +76,36 @@ public class HighlighterTest {
 			+ "  <strong>Then </strong>I should have <left> cucumbers<br/>"
 			+ "<br/>"
 			+ "  <span style=\"background-color:rgb(255, 128, 128)\"><strong>UNEXPECTED_TOKEN</strong></span>",
-			result.result);
+			result.getResult());
 		
-		assertEquals(1, result.errors.size());
-		assertTrue(result.errors.get(0).contains("UNEXPECTED_TOKEN"));
+		assertEquals(1, result.getStatuses().size());
+		assertTrue(result.getStatuses().get(0).getMessage().contains("UNEXPECTED_TOKEN"));
 	}
 	
 	@Test
 	public void userStory() {
-		HighlightResult result = UserStoryHighlighter.highlight(
+		Result<String> result = UserStoryHighlighter.highlight(
 			"As a user I want to fnork so that the biggins stay happy.");
 		
 		assertEquals("<strong>As a</strong> user <strong>I want to</strong> fnork "
 			+ "<strong>so that</strong> the biggins stay happy.",
-			result.result);
+			result.getResult());
 	}
 	
 	@Test
 	public void userStoryNoAsA() {
 		String text = "User want to fnork so that the biggins stay happy.";
-		HighlightResult result = UserStoryHighlighter.highlight(text);
+		Result<String> result = UserStoryHighlighter.highlight(text);
 		
-		assertEquals(text, result.result);
-		assertEquals(1, result.errors.size());
+		assertEquals(text, result.getResult());
+		assertEquals(1, result.getStatuses().size());
 	}
 
 	@Test
 	public void userStoryNoIwant() {
-		HighlightResult result = UserStoryHighlighter.highlight("As a user I fnork so that the biggins stay happy.");
+		Result<String> result = UserStoryHighlighter.highlight("As a user I fnork so that the biggins stay happy.");
 		
-		assertEquals("<strong>As a</strong> user I fnork so that the biggins stay happy.", result.result);
-		assertEquals(1, result.errors.size());
+		assertEquals("<strong>As a</strong> user I fnork so that the biggins stay happy.", result.getResult());
+		assertEquals(1, result.getStatuses().size());
 	}
 }

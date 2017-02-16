@@ -23,7 +23,8 @@ Require-Bundle: org.eclipse.ui,
  com.google.guava,
  org.apache.commons.lang,
  org.eclipse.nebula.widgets.nattable.extension.nebula,
- org.eclipse.nebula.widgets.richtext
+ org.eclipse.nebula.widgets.richtext,
+ org.eclipse.core.databinding
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: lib/gherkin-4.0.0.jar,

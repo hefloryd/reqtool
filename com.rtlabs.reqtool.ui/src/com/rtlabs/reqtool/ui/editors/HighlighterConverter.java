@@ -15,6 +15,8 @@ import com.rtlabs.reqtool.model.requirements.Requirement;
 import com.rtlabs.reqtool.model.requirements.RequirementType;
 import com.rtlabs.reqtool.ui.highlighter.GherkinHighlighter;
 import com.rtlabs.reqtool.ui.highlighter.UserStoryHighlighter;
+import com.rtlabs.reqtool.util.ReqtoolUtil;
+import com.rtlabs.reqtool.util.Result;
 
 /**
  * A display converter which performs Gherkin syntax highlighting.
@@ -36,7 +38,7 @@ public class HighlighterConverter implements IDisplayConverter {
 		
 		Requirement showedReq = dataProvider.getRowObject(cell.getRowIndex());
 		
-		HighlightResult highlightResult = null;
+		Result<String> highlightResult = null;
 		
 		if (showedReq.getType() == RequirementType.GHERKIN) {
 			highlightResult = GherkinHighlighter.highlight(escapedText);
@@ -45,9 +47,9 @@ public class HighlighterConverter implements IDisplayConverter {
 		}
 		
 		if (highlightResult == null) {
-			return String.join("<br/>", Arrays.asList(escapedText.split("\\r\\n|\\n\\r|\\n|\\r")));
+			return String.join("<br/>", Arrays.asList(ReqtoolUtil.splitLines(escapedText)));
 		} else {
-			return highlightResult.result;
+			return highlightResult.getResult();
 		}
 	}
 	
