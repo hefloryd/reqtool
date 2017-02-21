@@ -4,7 +4,7 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
 
-public class FolderCreator {
+class FolderCreator {
 	/**
 	 * Makes sure container and all of its parents exists. If container is a project verify its existence. If it is a
 	 * folder then create it.

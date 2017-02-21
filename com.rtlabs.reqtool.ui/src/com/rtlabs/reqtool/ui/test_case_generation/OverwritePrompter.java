@@ -17,7 +17,7 @@ import org.eclipse.ui.statushandlers.StatusManager;
 /**
  * Used to prompt users with a dialog for asking about overwriting files.
  */
-public class OverwritePrompter {
+class OverwritePrompter {
 	private final OverwriteDialog overwriteDialog;
 
 	public interface FileAction {
@@ -26,20 +26,6 @@ public class OverwritePrompter {
 	}
 	
 	public static class GenerateFileAction implements FileAction {
-
-//		private final Supplier<IFile> fileGenerator;
-//		private final Supplier<String> contentGenerator;
-//
-//		public GenerateFileAction(Supplier<IFile> fileGenerator, Supplier<String> contentGenerator) {
-//		this.fileGenerator = fileGenerator;
-//		this.contentGenerator = contentGenerator;
-//	}
-//	
-//	@Override
-//	public IFile getTargetFile() {
-//		return fileGenerator.get();
-//	}
-		
 		private final IFile file;
 		private final String content;
 		

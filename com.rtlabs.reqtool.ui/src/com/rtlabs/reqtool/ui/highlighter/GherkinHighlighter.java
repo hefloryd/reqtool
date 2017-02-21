@@ -57,7 +57,12 @@ public class GherkinHighlighter {
 		}
 	}
 	
-	
+	/**
+	 * Compiles test into a Gherkin syntax tree. Returns that together with error information.
+	 * 
+	 * (This does not really belong in the highlighter class since it is also used elsewhere. But it
+	 * can stay here for the moment.)
+	 */
 	public static CompileResult compile(String text) {
 		AstBuilder builder = new AstBuilder();
 		List<UnexpectedTokenException> unexpectedTokens = Collections.emptyList();

@@ -35,8 +35,6 @@ import org.eclipse.ui.statushandlers.StatusManager;
 
 import com.rtlabs.reqtool.model.requirements.Requirement;
 import com.rtlabs.reqtool.ui.Activator;
-import com.rtlabs.reqtool.ui.highlighter.GherkinHighlighter;
-import com.rtlabs.reqtool.ui.highlighter.GherkinHighlighter.CompileResult;
 import com.rtlabs.reqtool.ui.test_case_generation.OverwritePrompter.FileAction;
 import com.rtlabs.reqtool.ui.test_case_generation.OverwritePrompter.GenerateFileAction;
 import com.rtlabs.reqtool.util.Result;
@@ -92,7 +90,7 @@ public class GenerateTestCaseHandler extends AbstractHandler {
 		List<FileAction> fileGenerationActions = new ArrayList<>();
 		
 		for (Requirement req : reqs) {
-			Result<String> result = generate(req);
+			Result<String> result = RobotTestCaseGenerator.generate(req);
 			if (result.isNoErrors()) {
 				String testFileName = "test_" + req.getName().replaceAll("\\s", "_") + ".robot";
 				IFile testFile = targetFolder.getFile(new Path(testFileName));
@@ -113,20 +111,6 @@ public class GenerateTestCaseHandler extends AbstractHandler {
 		return null;
 	}
 	
-	private Result<String> generate(Requirement req) {
-		CompileResult compileResult = GherkinHighlighter.compile(req.getBody());
-
-		if (compileResult.isNoErrors()) {
-			return new Result<>(new GherkinTestCaseGeneratorImpl().generate(
-				new GherkinTestCaseGeneratorHelper(compileResult.getResult())), 
-				compileResult.getStatuses());
-		} else {
-			return new Result<>(null, compileResult.getStatuses());
-		}
-		
-		
-	}
-	
 	
 	/**
 	 * This classes contains code for dialogs and interactions with the Eclipse framework. It enables mocking
@@ -144,14 +128,14 @@ public class GenerateTestCaseHandler extends AbstractHandler {
 
 		public void reportResult(Shell shell, List<IStatus> statuses) {
 			BasicDiagnostic rootStatus = new BasicDiagnostic(Activator.PLUGIN_ID, IStatus.ERROR, 
-				"The source code generation procedure has completed.\n\n"
+				"The test case generation procedure has completed.\n\n"
 					+ "The following are the status messages from the generation steps.", null);
 			
 			for (IStatus s : statuses) {
 				rootStatus.add(BasicDiagnostic.toDiagnostic(s));
 			}
 			
-			DiagnosticDialog dialog = new DiagnosticDialog(shell, "Source Code Generation Complete", 
+			DiagnosticDialog dialog = new DiagnosticDialog(shell, "Test Case Generation Complete", 
 					null, rootStatus, Diagnostic.INFO | Diagnostic.WARNING | Diagnostic.ERROR) {
 				public void create() {
 					super.create();
