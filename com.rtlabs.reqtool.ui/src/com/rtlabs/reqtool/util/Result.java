@@ -61,4 +61,8 @@ public class Result<T> {
 	public List<IStatus> getStatuses() {
 		return statuses;
 	}
+	
+	public String toString() {
+		return getClass().getSimpleName() + "<" + result + ", " + statuses;
+	}
 }
