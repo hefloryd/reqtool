@@ -1,11 +1,11 @@
 <%@ jet package="com.rtlabs.reqtool.ui.test_case_generation"
-        class="GherkinTestCaseGeneratorImpl"
+        class="RobotTestCaseGeneratorTemplate"
         imports="
             gherkin.ast.ScenarioDefinition
             gherkin.ast.Step
             "
 %>
-<% GherkinTestCaseGeneratorHelper h = (GherkinTestCaseGeneratorHelper) argument; %>
+<% RobotTestCaseGeneratorHelper h = (RobotTestCaseGeneratorHelper) argument; %>
 *** Settings ***
 Documentation     <%= h.testCaseName() %>
 ...
@@ -13,14 +13,21 @@ Documentation     <%= h.testCaseName() %>
 ...               <%= descriptionLine %>
 <% } %>
 
-Library           <%= h.libraryName() %>
-
 *** Test Cases ***
 
-<% for (ScenarioDefinition senario : h.senarios()) { %>
+<% for (ScenarioDefinition senario : h.scenarios()) { %>
 <%= senario.getName() %>
 <% for (Step step : senario.getSteps()) { %>
   <%= step.getKeyword() %><%= step.getText() %>
 <% } %>
-    
+<% } %>
+
+*** Keywords ***
+
+<% for (ScenarioDefinition scenario : h.scenarios()) { %>
+<% for (Step step : h.uniqueSteps(scenario)) { %>
+<%= h.keywordName(step) %>
+    # TODO: Generated keyword, to be implemented
+
+<% } %>
 <% } %>

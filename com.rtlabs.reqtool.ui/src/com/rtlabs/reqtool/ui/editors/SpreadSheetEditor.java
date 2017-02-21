@@ -23,6 +23,7 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.nebula.widgets.nattable.NatTable;
 import org.eclipse.nebula.widgets.nattable.config.AbstractRegistryConfiguration;
+import org.eclipse.nebula.widgets.nattable.config.AbstractUiBindingConfiguration;
 import org.eclipse.nebula.widgets.nattable.config.CellConfigAttributes;
 import org.eclipse.nebula.widgets.nattable.config.DefaultNatTableStyleConfiguration;
 import org.eclipse.nebula.widgets.nattable.config.IConfigRegistry;
@@ -63,20 +64,30 @@ import org.eclipse.nebula.widgets.nattable.style.CellStyleAttributes;
 import org.eclipse.nebula.widgets.nattable.style.DisplayMode;
 import org.eclipse.nebula.widgets.nattable.style.HorizontalAlignmentEnum;
 import org.eclipse.nebula.widgets.nattable.style.Style;
+import org.eclipse.nebula.widgets.nattable.ui.action.IMouseAction;
+import org.eclipse.nebula.widgets.nattable.ui.binding.UiBindingRegistry;
+import org.eclipse.nebula.widgets.nattable.ui.matcher.MouseEventMatcher;
 import org.eclipse.nebula.widgets.nattable.ui.menu.HeaderMenuConfiguration;
+import org.eclipse.nebula.widgets.nattable.ui.menu.PopupMenuAction;
+import org.eclipse.nebula.widgets.nattable.ui.menu.PopupMenuBuilder;
 import org.eclipse.nebula.widgets.nattable.util.GUIHelper;
+import org.eclipse.nebula.widgets.nattable.viewport.action.ViewportSelectRowAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
+import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.part.EditorPart;
 
 import com.rtlabs.reqtool.model.requirements.Priority;
@@ -85,6 +96,7 @@ import com.rtlabs.reqtool.model.requirements.RequirementType;
 import com.rtlabs.reqtool.model.requirements.Specification;
 import com.rtlabs.reqtool.model.requirements.State;
 import com.rtlabs.reqtool.model.requirements.provider.RequirementsItemProviderAdapterFactory;
+import com.rtlabs.reqtool.ui.Activator;
 /**
  * An editor which dispalys a table of requirements.
  */
@@ -432,7 +444,8 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 
 		natTable.addConfiguration(headerStyle());
 		natTable.addConfiguration(selectionStyle());
-		natTable.addConfiguration(new HeaderMenuConfiguration(natTable));
+
+		natTable.addConfiguration(rowHeaderConfiguration(natTable));
 		natTable.addConfiguration(new EditorConfiguration(bodyDataProvider));
 		natTable.configure();
 
@@ -455,7 +468,78 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(natTable);
 	}
 
+	private HeaderMenuConfiguration rowHeaderConfiguration(final NatTable natTable) {
+		return new HeaderMenuConfiguration(natTable) {
+			@Override
+			protected PopupMenuBuilder createRowHeaderMenu(NatTable table) {
+				return super.createRowHeaderMenu(table)
+					.withContributionItem(new CommandContributionItem(new CommandContributionItemParameter(getSite(),
+						Activator.PLUGIN_ID + ".table.menu.generateRobotTestCase", 
+						"com.rtlabs.reqtool.ui.generateRobotTestCase", 
+						CommandContributionItem.STYLE_PUSH)) {
+							@Override
+							public boolean isDynamic() {
+								// Work-around for weird behaviour (possibly bug) in MenuManager, which makes item 
+								// disappear every other time the menu is showed
+								return true;
+							}
+					});
+			}
+			
+			@Override
+			public void configureUiBindings(UiBindingRegistry uiBindingRegistry) {
+				// Configure a right-click action which both selects a row and opens a menu. This is because when
+				// the Generate Test command is invoked from the menu, the selected row should be the one that
+				// the user clicked.
+				uiBindingRegistry.registerFirstSingleClickBinding(
+					MouseEventMatcher.rowHeaderRightClick(SWT.NONE), 
+					new IMouseAction() {
+						private final IMouseAction selectAction = new ViewportSelectRowAction(false, false);
+						private final IMouseAction menuAction = new PopupMenuAction(rowHeaderMenu);
+						@Override
+						public void run(NatTable table, MouseEvent event) {
+							selectAction.run(table, event);
+							menuAction.run(table, event);
+						}
+					});
+				
+				// Copied from overridden super class method
+				uiBindingRegistry.registerMouseDownBinding(
+					new MouseEventMatcher(SWT.NONE, GridRegion.COLUMN_HEADER, MouseEventMatcher.RIGHT_BUTTON),
+					new PopupMenuAction(this.colHeaderMenu));
+				// Copied from overridden super class method
+				uiBindingRegistry.registerMouseDownBinding(
+					new MouseEventMatcher(SWT.NONE, GridRegion.CORNER, MouseEventMatcher.RIGHT_BUTTON),
+					new PopupMenuAction(this.cornerMenu));
+			}
+		};
+	}
+
+	@SuppressWarnings("unused")
+	private static class DebugMenuConfiguration extends AbstractUiBindingConfiguration {
+
+		private final Menu debugMenu;
+
+		public DebugMenuConfiguration(NatTable natTable) {
+			// [2] create the menu using the PopupMenuBuilder
+			this.debugMenu = new PopupMenuBuilder(natTable).withInspectLabelsMenuItem().build();
+		}
+
+		@Override
+		public void configureUiBindings(UiBindingRegistry uiBindingRegistry) {
+			// [3] bind the PopupMenuAction to a right click
+			// using GridRegion.COLUMN_HEADER instead of null would
+			// for example open the menu only on performing a right
+			// click on the column header instead of any region
+			uiBindingRegistry.registerMouseDownBinding(
+				new MouseEventMatcher(SWT.NONE, null, MouseEventMatcher.RIGHT_BUTTON),
+				new PopupMenuAction(this.debugMenu));
+		}
+
+	}
+	
 	private DefaultColumnHeaderStyleConfiguration headerStyle() {
+		// Gives the column header a gray-to-white gradient.
 		DefaultColumnHeaderStyleConfiguration columnHeaderStyle = new DefaultColumnHeaderStyleConfiguration();
 		columnHeaderStyle.gradientFgColor =  GUIHelper.COLOR_GRAY;
 		columnHeaderStyle.gradientBgColor =  GUIHelper.COLOR_WHITE;
@@ -465,8 +549,8 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 	}
 
 	private DefaultSelectionStyleConfiguration selectionStyle() {
+		// Gives the selection same font as rest of the table, with font colour white and gray background 
 		DefaultSelectionStyleConfiguration selectionConfig = new DefaultSelectionStyleConfiguration() {
-
 			@Override
 			protected void configureSelectionStyle(IConfigRegistry configRegistry) {
 				Style cellStyle = new Style();
