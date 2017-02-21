@@ -26,6 +26,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
@@ -35,6 +36,7 @@ import org.eclipse.ui.statushandlers.StatusManager;
 
 import com.rtlabs.reqtool.model.requirements.Requirement;
 import com.rtlabs.reqtool.ui.Activator;
+import com.rtlabs.reqtool.ui.TraceManager;
 import com.rtlabs.reqtool.ui.test_case_generation.OverwritePrompter.FileAction;
 import com.rtlabs.reqtool.ui.test_case_generation.OverwritePrompter.GenerateFileAction;
 import com.rtlabs.reqtool.util.Result;
@@ -94,7 +96,17 @@ public class GenerateTestCaseHandler extends AbstractHandler {
 			if (result.isNoErrors()) {
 				String testFileName = "test_" + req.getName().replaceAll("\\s", "_") + ".robot";
 				IFile testFile = targetFolder.getFile(new Path(testFileName));
-				fileGenerationActions.add(new GenerateFileAction(testFile, result.getResult()));
+				fileGenerationActions.add(new GenerateFileAction(testFile, result.getResult()) {
+					@Override
+					public IStatus run(IFile targetFile) throws CoreException {
+						if (!targetFile.exists()) {
+							// Only create trace if target does not exist, to not annoy user by
+							// making them repeatedly remove it.
+							new TraceManager().createTrace(req, new StructuredSelection(targetFile));
+						}
+						return super.run(targetFile);
+					}
+				});
 			}
 			
 			if (!result.isAllOk()) {

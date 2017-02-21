@@ -41,14 +41,7 @@ class OverwritePrompter {
 			
 		@Override
 		public IStatus run(IFile targetFile) throws CoreException {
-			return runString(targetFile);
-		}
-
-		public final IStatus runString(IFile targetFile) throws CoreException {
-			return runStream(targetFile, new ByteArrayInputStream(content.getBytes()));
-		}
-	
-		public final IStatus runStream(IFile targetFile, InputStream fileContents) throws CoreException {
+			InputStream fileContents = new ByteArrayInputStream(content.getBytes());
 			if (targetFile.exists()) {
 				targetFile.setContents(fileContents, true, true, null);
 			} else {

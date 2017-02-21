@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.common.command.BasicCommandStack;
 import org.eclipse.emf.common.notify.Notification;
@@ -28,6 +29,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.part.EditorPart;
+import org.eclipse.ui.statushandlers.StatusManager;
 
 import com.rtlabs.reqtool.model.requirements.Specification;
 import com.rtlabs.reqtool.model.requirements.provider.RequirementsItemProviderAdapterFactory;
@@ -83,7 +85,8 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 					try {
 						resource.save(saveOptions);
 					} catch (IOException e) {
-						e.printStackTrace();
+						StatusManager.getManager().handle(
+							ValidationStatus.error(e.getMessage(), e), StatusManager.BLOCK | StatusManager.LOG);
 					}
 				}
 			}

@@ -38,13 +38,11 @@ public class TraceManager {
 			List<EObject> selectionAsEObjects = mapSelectionToEObjects(artifactModel, artifactHandlers, list);
 
 			Collection<EClass> traceTypes = traceAdapter.getAvailableTraceTypes(selectionAsEObjects);
-			Optional<EClass> chosenType = traceTypes.stream().findFirst();
-
-			if (chosenType.isPresent()) {
-				EObject root = traceAdapter.createTrace(chosenType.get(), traceModel, selectionAsEObjects);
+			
+			traceTypes.stream().findFirst().ifPresent((EClass chosenType) -> {
+				EObject root = traceAdapter.createTrace(chosenType, traceModel, selectionAsEObjects);
 				persistenceAdapter.saveTracesAndArtifacts(root, artifactModel);				
-			}
-	
+			});
 		}
 	}
 	
