@@ -34,7 +34,7 @@ import org.eclipse.ui.part.ISetSelectionTarget;
 import com.rtlabs.reqtool.model.fixture.RequirementService;
 import com.rtlabs.reqtool.model.requirements.Specification;
 
-public class NewWizard extends Wizard implements INewWizard {
+public class NewSpecificationWizard extends Wizard implements INewWizard {
 
 	/**
 	 * The supported extensions for created files.
@@ -53,9 +53,9 @@ public class NewWizard extends Wizard implements INewWizard {
 	private String defaultName = "requirements";
 
 	@Override
-	public void init(IWorkbench workbench, IStructuredSelection selection) {		
-		this.workbench = workbench;
-		this.selection = selection;
+	public void init(IWorkbench w, IStructuredSelection s) {		
+		this.workbench = w;
+		this.selection = s;
 	}
 
 	private Specification createInitialModel() {
