@@ -7,7 +7,10 @@ import org.eclipse.emf.edit.provider.IItemPropertyDescriptor;
 import org.eclipse.emf.edit.provider.IItemPropertySource;
 import org.eclipse.nebula.widgets.nattable.data.IColumnPropertyAccessor;
 
-public class SpreadSheetColumnPropertyAccessor implements IColumnPropertyAccessor<EObject> {
+/**
+ * A class which gets and sets property values on EObjects. Used by NatList. 
+ */
+public class SpreadSheetColumnPropertyAccessor<T extends EObject> implements IColumnPropertyAccessor<T> {
 	
 	private AdapterFactory adapterFactory;
 	private String[] propertyNames;
@@ -18,7 +21,7 @@ public class SpreadSheetColumnPropertyAccessor implements IColumnPropertyAccesso
 	}
 
 	@Override
-	public Object getDataValue(EObject rowObject, int columnIndex) {
+	public Object getDataValue(T rowObject, int columnIndex) {
 		IItemPropertySource adapter = (IItemPropertySource)adapterFactory.adapt(rowObject, IItemPropertySource.class);
 		String propertyName = propertyNames[columnIndex];
 		IItemPropertyDescriptor descriptor = adapter.getPropertyDescriptor(rowObject, propertyName);
@@ -31,7 +34,7 @@ public class SpreadSheetColumnPropertyAccessor implements IColumnPropertyAccesso
 	}
 
 	@Override
-	public void setDataValue(EObject rowObject, int columnIndex, Object newValue) {
+	public void setDataValue(T rowObject, int columnIndex, Object newValue) {
 		IItemPropertySource adapter = (IItemPropertySource)adapterFactory.adapt(rowObject, IItemPropertySource.class);
 		String propertyName = propertyNames[columnIndex];
 		IItemPropertyDescriptor descriptor = adapter.getPropertyDescriptor(rowObject, propertyName);

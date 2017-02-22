@@ -74,6 +74,7 @@ public class TraceMetaModelAdapterImpl implements TraceMetaModelAdapter {
 					IAnnotateArtifact handler = (IAnnotateArtifact) h;
 					handler.annotateArtifact(artifact, child.getParents().toString());
 				} catch (Exception e) {
+					// TODO: Don't ignore Exception! It could hide problems in the code.
 					// Ignore
 				}
 			}

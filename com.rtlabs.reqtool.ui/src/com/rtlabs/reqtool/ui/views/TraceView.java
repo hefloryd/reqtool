@@ -7,7 +7,6 @@ import org.eclipse.capra.core.handlers.ArtifactHandler;
 import org.eclipse.capra.core.helpers.ExtensionPointHelper;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
@@ -150,12 +149,7 @@ public class TraceView extends ViewPart implements IZoomableWorkbenchPart, IShow
 		menuMgr.setRemoveAllWhenShown(true);
 		fillContextMenu(menuMgr);
 
-		menuMgr.addMenuListener(new IMenuListener() {
-			public void menuAboutToShow(IMenuManager manager) {
-				fillContextMenu(manager);
-
-			}
-		});
+		menuMgr.addMenuListener(manager -> fillContextMenu(manager));
 		Menu menu = menuMgr.createContextMenu(viewer.getControl());
 		viewer.getControl().setMenu(menu);
 		getSite().registerContextMenu(menuMgr, viewer);
@@ -163,7 +157,7 @@ public class TraceView extends ViewPart implements IZoomableWorkbenchPart, IShow
 
 	private void fillContextMenu(IMenuManager manager) {
 		
-		IShowInSource showInSource = (IShowInSource) getAdapter(IShowInSource.class);
+		IShowInSource showInSource = getAdapter(IShowInSource.class);
 		if (showInSource != null) {
 			ShowInContext context = showInSource.getShowInContext();
 			if (context != null) {
