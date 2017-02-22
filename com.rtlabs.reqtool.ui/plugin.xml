@@ -5,7 +5,7 @@
    <extension
          point="org.eclipse.ui.views">
       <category
-            name="Requirements"
+            name="ReqTool"
             id="com.rtlabs.reqtool.ui">
       </category>
       <view
@@ -16,6 +16,7 @@
             id="com.rtlabs.reqtool.ui.views.TraceView">
       </view>
    </extension>
+   
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
@@ -28,6 +29,7 @@
          </view>
       </perspectiveExtension>
    </extension>
+   
    <extension
          point="org.eclipse.ui.editors">
       <editor
@@ -39,22 +41,46 @@
             name="Requirements Editor">
       </editor>
    </extension>
+   
+   <extension point="org.eclipse.ui.commandImages">
+      <image
+         commandId="com.rtlabs.reqtool.ui.generateRobotTestCase"
+         icon="icons/generate_code.png" />
+    </extension>
+   
    <extension
          point="org.eclipse.ui.commands">
+      <category
+            id="com.rtlabs.reqtool.ui.commands.category" name="ReqTool">
+      </category>
       <command
             defaultHandler="com.rtlabs.reqtool.ui.handler.AddRequirement"
             id="com.rtlabs.reqtool.ui.addRequirement"
+            categoryId="com.rtlabs.reqtool.ui.commands.category"
             name="Add Requirement">
       </command>
+      <command
+            defaultHandler="com.rtlabs.reqtool.ui.test_case_generation.GenerateTestCaseHandler"
+            id="com.rtlabs.reqtool.ui.generateRobotTestCase"
+            categoryId="com.rtlabs.reqtool.ui.commands.category"
+            name="Generate Robot Framework Tests">
+      </command>
    </extension>
+   
    <extension
          point="org.eclipse.ui.bindings">
       <key
             commandId="com.rtlabs.reqtool.ui.addRequirement"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+N">
+            sequence="M1+M2+M3+N">
+      </key>
+      <key
+            commandId="com.rtlabs.reqtool.ui.generateRobotTestCase"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+M3+G">
       </key>
    </extension>
+   
    <extension
          point="org.eclipse.ui.newWizards">
       <category
@@ -63,30 +89,33 @@
       </category>
       <wizard
             category="com.rtlabs.reqtool.ui.category"
-            class="com.rtlabs.reqtool.ui.wizards.NewWizard"
+            class="com.rtlabs.reqtool.ui.wizards.NewSpecificationWizard"
             id="com.rtlabs.reqtool.ui.wizard"
             name="Specification">
       </wizard>
    </extension>
+   
    <extension
          point="org.eclipse.capra.configuration.persistenceHandler">
       <persistenceHandler
             class="com.rtlabs.reqtool.ui.adapters.TracePersistenceAdapterImpl">
       </persistenceHandler>
    </extension>
+   
    <extension
          point="org.eclipse.capra.configuration.TraceabilityMetaModel">
       <TraceabilityMetaModelAdapter
             class="com.rtlabs.reqtool.ui.adapters.TraceMetaModelAdapterImpl">
       </TraceabilityMetaModelAdapter>
    </extension>
+   
    <extension
          point="org.eclipse.capra.configuration.ArtifactMetaModel">
       <ArtifactMetaModelAdapter
             class="com.rtlabs.reqtool.ui.adapters.ArtifactMetaModelAdapterImpl">
       </ArtifactMetaModelAdapter>
    </extension>
-   <!--
+   
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
@@ -102,7 +131,13 @@
             </dynamic>
          </menu>
       </menuContribution>
+
+      <!-- Main Eclipse toolbar with Generate Test button -->
+      <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+         <toolbar id="com.rtlabs.reqtool.ui.toolbar" label="ReqTool">
+            <command commandId="com.rtlabs.reqtool.ui.generateRobotTestCase" style="push"/>
+         </toolbar>
+      </menuContribution>
    </extension>
-   -->
 
 </plugin>
