@@ -1,7 +1,6 @@
 package com.rtlabs.reqtool.ui.editors;
 
 import java.util.Arrays;
-import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -10,7 +9,6 @@ import org.eclipse.nebula.widgets.nattable.data.IRowDataProvider;
 import org.eclipse.nebula.widgets.nattable.data.convert.IDisplayConverter;
 import org.eclipse.nebula.widgets.nattable.layer.cell.ILayerCell;
 
-import com.google.common.collect.ImmutableList;
 import com.rtlabs.reqtool.model.requirements.Requirement;
 import com.rtlabs.reqtool.model.requirements.RequirementType;
 import com.rtlabs.reqtool.ui.highlighter.GherkinHighlighter;
@@ -53,20 +51,6 @@ public class HighlighterConverter implements IDisplayConverter {
 		}
 	}
 	
-	public static class HighlightResult {
-		public final String result;
-		public final List<String> errors;
-		
-		public HighlightResult(String result, List<String> errors) {
-			this.result = result;
-			this.errors = errors;
-		}
-
-		public HighlightResult(String result) {
-			this(result, ImmutableList.of());
-		}
-	}
-
 	@Override
 	public Object canonicalToDisplayValue(Object text) {
 		throw new AssertionError();

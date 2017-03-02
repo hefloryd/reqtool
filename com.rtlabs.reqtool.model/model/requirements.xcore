@@ -2,6 +2,7 @@
 package com.rtlabs.reqtool.model.requirements
 
 import org.eclipse.emf.ecore.EObject
+type LocalDate wraps java.time.LocalDate
 
 enum Priority {
 	LOWEST
@@ -46,9 +47,13 @@ class Requirement extends Traceable {
 	String body
 	Priority priority
 	State state
-	Date created
-	Date modified
+	LocalDate created
+	LocalDate modified
+
+	@GenModel(property="Editable") // Triggers description generation
 	contains Person owner
+	
+	
 	RequirementType ^type
 	
 	container Specification specification opposite requirements
@@ -63,9 +68,9 @@ class Requirement extends Traceable {
 }
 
 enum RequirementType {
-	FREE_STYLE, 
-	GHERKIN,
-	USER_STORY
+	FREE_STYLE as "Free Style",
+	GHERKIN as "Gherkin",
+	USER_STORY as "User Story"
 }
 
 class Artifact extends Traceable {

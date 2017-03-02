@@ -22,7 +22,6 @@ import org.eclipse.nebula.widgets.nattable.edit.EditConfigAttributes;
 import org.eclipse.nebula.widgets.nattable.edit.config.DialogErrorHandling;
 import org.eclipse.nebula.widgets.nattable.edit.editor.ComboBoxCellEditor;
 import org.eclipse.nebula.widgets.nattable.edit.editor.MultiLineTextCellEditor;
-import org.eclipse.nebula.widgets.nattable.edit.gui.ICellEditDialog;
 import org.eclipse.nebula.widgets.nattable.grid.GridRegion;
 import org.eclipse.nebula.widgets.nattable.grid.data.DefaultColumnHeaderDataProvider;
 import org.eclipse.nebula.widgets.nattable.grid.data.DefaultCornerDataProvider;
@@ -61,9 +60,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
@@ -173,7 +170,7 @@ class RequirementTableBuilder {
 		natTable.addConfiguration(headerStyle());
 		natTable.addConfiguration(selectionStyle());
 
-		natTable.addConfiguration(rowHeaderConfiguration(natTable));
+		natTable.addConfiguration(rowHeaderConfiguration(natTable, serviceLocator));
 		natTable.addConfiguration(bodyEditorConfiguration(bodyDataProvider));
 		natTable.addConfiguration(typeEditorConfiguration());
 		natTable.addConfiguration(priorityEditorConfiguration());
@@ -199,7 +196,7 @@ class RequirementTableBuilder {
 	}
 	
 	
-	private HeaderMenuConfiguration rowHeaderConfiguration(final NatTable natTable) {
+	private static HeaderMenuConfiguration rowHeaderConfiguration(final NatTable natTable, IServiceLocator serviceLocator) {
 		return new HeaderMenuConfiguration(natTable) {
 			@Override
 			protected PopupMenuBuilder createRowHeaderMenu(NatTable table) {
@@ -269,7 +266,7 @@ class RequirementTableBuilder {
 
 	}
 	
-	private DefaultColumnHeaderStyleConfiguration headerStyle() {
+	private static DefaultColumnHeaderStyleConfiguration headerStyle() {
 		// Gives the column header a gray-to-white gradient.
 		DefaultColumnHeaderStyleConfiguration columnHeaderStyle = new DefaultColumnHeaderStyleConfiguration();
 		columnHeaderStyle.gradientFgColor =  GUIHelper.COLOR_GRAY;
@@ -279,7 +276,7 @@ class RequirementTableBuilder {
 		return columnHeaderStyle;
 	}
 
-	private DefaultSelectionStyleConfiguration selectionStyle() {
+	private static DefaultSelectionStyleConfiguration selectionStyle() {
 		// Gives the selection same font as rest of the table, with font colour white and gray background 
 		DefaultSelectionStyleConfiguration selectionConfig = new DefaultSelectionStyleConfiguration() {
 			@Override
@@ -300,7 +297,7 @@ class RequirementTableBuilder {
 		return selectionConfig;
 	}
 	
-	private IConfiguration bodyEditorConfiguration(IRowDataProvider<Requirement> dataProvider) {
+	private static IConfiguration bodyEditorConfiguration(IRowDataProvider<Requirement> dataProvider) {
 		return new AbstractRegistryConfiguration() {
 			@Override
 			public void configureRegistry(IConfigRegistry configRegistry) {
@@ -325,15 +322,6 @@ class RequirementTableBuilder {
 						DisplayMode.EDIT,
 						LABEL_BODY);
 	
-				// Configure the multi line text editor to always open in a sub-dialog.
-				// NOTE: Due to a bug in NatTable it is not possible to use this together with and error handler
-				// with allowCommit=true.
-				//
-				//			configRegistry.registerConfigAttribute(
-				//					EditConfigAttributes.OPEN_IN_DIALOG,
-				//					true,
-				//					DisplayMode.EDIT,
-				//					LABEL_BODY);
 				
 				Style cellStyle = new Style();
 				cellStyle.setAttributeValue(
@@ -357,31 +345,41 @@ class RequirementTableBuilder {
 						DisplayMode.EDIT,
 						LABEL_BODY);
 	
-				// Configure pop-up editor dialog settings
-				Display display = Display.getCurrent();
-				Map<String, Object> editDialogSettings = new HashMap<>();
-				editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_TITLE, "Enter requirement description");
-				editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_ICON, display.getSystemImage(SWT.ICON_WARNING));
-				editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_RESIZABLE, Boolean.TRUE);
-	
-				Point size = new Point(400, 300);
-				editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_SIZE, size);
-	
-				int screenWidth = display.getBounds().width;
-				int screenHeight = display.getBounds().height;
-				Point location = new Point(
-						(screenWidth / (2 * display.getMonitors().length)) - (size.x / 2),
-						(screenHeight / 2) - (size.y / 2));
-				editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_LOCATION, location);
-	
-				// Add custom message
-				editDialogSettings.put(ICellEditDialog.DIALOG_MESSAGE, "Enter some free text in here:");
-	
-				configRegistry.registerConfigAttribute(
-						EditConfigAttributes.EDIT_DIALOG_SETTINGS,
-						editDialogSettings,
-						DisplayMode.EDIT,
-						LABEL_BODY);
+				// Configure the multi line text editor to always open in a sub-dialog.
+				// NOTE: Due to a bug in NatTable it is not possible to use this together with and error handler
+				// with allowCommit=true.
+				//
+				//			configRegistry.registerConfigAttribute(
+				//					EditConfigAttributes.OPEN_IN_DIALOG,
+				//					true,
+				//					DisplayMode.EDIT,
+				//					LABEL_BODY);
+				// 
+				// // Configure pop-up editor dialog settings
+				// Display display = Display.getCurrent();
+				// Map<String, Object> editDialogSettings = new HashMap<>();
+				// editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_TITLE, "Enter requirement description");
+				// editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_ICON, display.getSystemImage(SWT.ICON_WARNING));
+				// editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_RESIZABLE, Boolean.TRUE);
+	            // 
+				// Point size = new Point(400, 300);
+				// editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_SIZE, size);
+	            // 
+				// int screenWidth = display.getBounds().width;
+				// int screenHeight = display.getBounds().height;
+				// Point location = new Point(
+				// 		(screenWidth / (2 * display.getMonitors().length)) - (size.x / 2),
+				// 		(screenHeight / 2) - (size.y / 2));
+				// editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_LOCATION, location);
+	            // 
+				// // Add custom message
+				// editDialogSettings.put(ICellEditDialog.DIALOG_MESSAGE, "Enter some free text in here:");
+	            // 
+				// configRegistry.registerConfigAttribute(
+				// 		EditConfigAttributes.EDIT_DIALOG_SETTINGS,
+				// 		editDialogSettings,
+				// 		DisplayMode.EDIT,
+				// 		LABEL_BODY);
 	
 				configRegistry.registerConfigAttribute(
 						EditConfigAttributes.CELL_EDITABLE_RULE,
@@ -404,7 +402,7 @@ class RequirementTableBuilder {
 		};
 	}
 	
-	private IConfiguration typeEditorConfiguration() {
+	private static IConfiguration typeEditorConfiguration() {
 		return new AbstractRegistryConfiguration() {
 			@Override
 			public void configureRegistry(IConfigRegistry configRegistry) {
@@ -425,7 +423,7 @@ class RequirementTableBuilder {
 		};
 	}
 
-	private IConfiguration priorityEditorConfiguration() {
+	private static IConfiguration priorityEditorConfiguration() {
 		return new AbstractRegistryConfiguration() {
 			@Override
 			public void configureRegistry(IConfigRegistry configRegistry) {
@@ -444,7 +442,7 @@ class RequirementTableBuilder {
 		};
 	}
 
-	private IConfiguration stateEditorConfiguration() {
+	private static IConfiguration stateEditorConfiguration() {
 		return new AbstractRegistryConfiguration() {
 			@Override
 			public void configureRegistry(IConfigRegistry configRegistry) {
