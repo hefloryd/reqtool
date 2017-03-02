@@ -1,15 +1,14 @@
 package com.rtlabs.reqtool.ui.test_case_generation;
 
+import static com.rtlabs.common.util.RtCollectionsUtil.toImmutableMap;
+
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collector;
 
 import org.apache.commons.lang.WordUtils;
 
@@ -47,23 +46,14 @@ class RobotTestCaseGeneratorHelper {
 	private Set<String> allUniqueSteps = new HashSet<>();
 	
 	public Collection<Step> uniqueSteps(ScenarioDefinition scenario) {
-		Map<String, Step> newSteps = scenario.getSteps().stream().collect(toLinkedHashMap(Step::getText));
-		newSteps.keySet().removeAll(allUniqueSteps);
+		Map<String, Step> newSteps = scenario.getSteps().stream()
+			.filter(allUniqueSteps::contains)
+			.collect(toImmutableMap(Step::getText));
+
 		allUniqueSteps.addAll(newSteps.keySet());
 		return newSteps.values();
 	}
 	
-	
-	// There is not strong reason for making these into separate methods. But the code looks so much nicer like this!
-	private static <T, K> Collector<T, ?, LinkedHashMap<K, T>> toLinkedHashMap(Function<T, K> k) {
-		return toLinkedHashMap(k, o -> o);
-	}
-	
-	private static <T, K, V> Collector<T, ?, LinkedHashMap<K, V>> toLinkedHashMap(Function<T, K> k, Function<T, V> v) {
-		return Collector.of(LinkedHashMap<K, V>::new, 
-			(m, e) -> m.put(k.apply(e), v.apply(e)), 
-			(m1, m2) -> { m1.putAll(m2); return m1; });
-	}
 	
 	private static final Pattern GHERKIN_VAR = Pattern.compile("<([^>]+)>");
 

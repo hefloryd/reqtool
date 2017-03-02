@@ -5,8 +5,10 @@ Bundle-SymbolicName: com.rtlabs.reqtool.ui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: com.rtlabs.reqtool.ui.Activator
 Bundle-Vendor: rt-labs.com
+Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
+ org.eclipse.emf.ecore;visibility:=reexport,
  org.eclipse.jface.text,
  org.eclipse.core.resources,
  org.eclipse.ui.editors,
@@ -24,7 +26,14 @@ Require-Bundle: org.eclipse.ui,
  org.apache.commons.lang,
  org.eclipse.nebula.widgets.nattable.extension.nebula,
  org.eclipse.nebula.widgets.richtext,
- org.eclipse.core.databinding
+ org.eclipse.core.databinding,
+ org.eclipse.ui.ide,
+ org.eclipse.ui.forms,
+ org.eclipse.emf.databinding,
+ org.eclipse.core.databinding.property,
+ org.eclipse.emf.edit;visibility:=reexport,
+ org.eclipse.emf.databinding.edit,
+ com.rtlabs.reqtool.common
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: lib/gherkin-4.0.0.jar,

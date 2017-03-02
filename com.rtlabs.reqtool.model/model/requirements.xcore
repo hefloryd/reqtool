@@ -22,11 +22,17 @@ enum State {
 	COMPLETE
 }
 
+
+@GenModel(labelFeature="fullName")
 class Person {
 	String firstName
 	String lastName
 	String company
 	String email
+
+	derived String fullName get {
+		firstName + " " + lastName
+	}
 }
 
 class Traceable {
@@ -39,8 +45,9 @@ class Traceable {
 
 	derived int numberOfChildren get {
 		return children.size();
-	}		
+	}
 }
+
 
 class Requirement extends Traceable {
 	int identifier
@@ -67,6 +74,7 @@ class Requirement extends Traceable {
 	}
 }
 
+
 enum RequirementType {
 	FREE_STYLE as "Free Style",
 	GHERKIN as "Gherkin",
@@ -84,14 +92,23 @@ class Artifact extends Traceable {
 	}	
 }
 
+
 class ArtifactContainer {
 	contains Artifact[] artifacts opposite parent
 }
 
 class Specification {
+	String title = ""
+	@GenModel(propertyMultiLine="true")
+	String description = ""
+
+	@GenModel(property="Editable") // Triggers description generation
 	contains Requirement[] requirements opposite specification
 	contains ArtifactContainer artifactContainer
-	int nextIdentifier
 	
+	String documentPrefixFile = ""
+	String doucmentPostfixFile = ""
+
+	int nextIdentifier
 	op Requirement createNewRequirement()
 }

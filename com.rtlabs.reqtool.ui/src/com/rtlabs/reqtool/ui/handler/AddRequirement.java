@@ -19,7 +19,7 @@ public class AddRequirement extends AbstractHandler {
 		IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
 		if (activeEditor instanceof SpreadSheetEditor) {
 			SpreadSheetEditor editor = (SpreadSheetEditor) activeEditor;
-			Specification specification = editor.getSpecification();
+			Specification specification = editor.getSpecificationValue();
 			EditingDomain editingDomain = editor.getEditingDomain();
 			Requirement requirement = specification.createNewRequirement();
 			AddCommand command = new AddCommand(editingDomain, specification.getRequirements(), requirement);

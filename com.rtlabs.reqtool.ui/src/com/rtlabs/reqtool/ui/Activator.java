@@ -1,8 +1,14 @@
 package com.rtlabs.reqtool.ui;
 
+import org.eclipse.emf.common.notify.AdapterFactory;
+import org.eclipse.emf.edit.provider.ComposedAdapterFactory;
+import org.eclipse.emf.edit.provider.ReflectiveItemProviderAdapterFactory;
+import org.eclipse.emf.edit.provider.resource.ResourceItemProviderAdapterFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+
+import com.rtlabs.reqtool.model.requirements.provider.RequirementsItemProviderAdapterFactory;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -57,5 +63,25 @@ public class Activator extends AbstractUIPlugin {
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
+	}
+	
+	/**
+	 * Returns an {@link AdapterFactory} with the necessary capabilities for this project. 
+	 */
+	public static ComposedAdapterFactory createStandardAdaperFactory(AdapterFactory... extraAdapterFactories) {
+		// Create an adapter factory that yields item providers
+		ComposedAdapterFactory adapterFactory = new ComposedAdapterFactory(ComposedAdapterFactory.Descriptor.Registry.INSTANCE);
+
+		adapterFactory.addAdapterFactory(new ResourceItemProviderAdapterFactory());
+
+		adapterFactory.addAdapterFactory(new RequirementsItemProviderAdapterFactory());
+		
+		for (AdapterFactory fact : extraAdapterFactories) {
+			adapterFactory.addAdapterFactory(fact);
+		}
+		
+		adapterFactory.addAdapterFactory(new ReflectiveItemProviderAdapterFactory());
+		
+		return adapterFactory;
 	}
 }

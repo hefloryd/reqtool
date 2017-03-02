@@ -17,11 +17,10 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.emf.common.ui.dialogs.DiagnosticDialog;
-import org.eclipse.emf.common.util.BasicDiagnostic;
-import org.eclipse.emf.common.util.Diagnostic;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
@@ -34,11 +33,12 @@ import org.eclipse.ui.dialogs.ISelectionValidator;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.statushandlers.StatusManager;
 
+import com.rtlabs.common.util.OverwritePrompter;
+import com.rtlabs.common.util.OverwritePrompter.FileAction;
+import com.rtlabs.common.util.OverwritePrompter.GenerateFileAction;
 import com.rtlabs.reqtool.model.requirements.Requirement;
 import com.rtlabs.reqtool.ui.Activator;
 import com.rtlabs.reqtool.ui.TraceManager;
-import com.rtlabs.reqtool.ui.test_case_generation.OverwritePrompter.FileAction;
-import com.rtlabs.reqtool.ui.test_case_generation.OverwritePrompter.GenerateFileAction;
 import com.rtlabs.reqtool.util.Result;
 
 /**
@@ -139,23 +139,16 @@ public class GenerateTestCaseHandler extends AbstractHandler {
 		}
 
 		public void reportResult(Shell shell, List<IStatus> statuses) {
-			BasicDiagnostic rootStatus = new BasicDiagnostic(Activator.PLUGIN_ID, IStatus.ERROR, 
+			MultiStatus rootStatus = new MultiStatus(Activator.PLUGIN_ID, IStatus.ERROR,
+				statuses.toArray(new IStatus[0]),
 				"The test case generation procedure has completed.\n\n"
 					+ "The following are the status messages from the generation steps.", null);
 			
-			for (IStatus s : statuses) {
-				rootStatus.add(BasicDiagnostic.toDiagnostic(s));
-			}
-			
-			DiagnosticDialog dialog = new DiagnosticDialog(shell, "Test Case Generation Complete", 
-					null, rootStatus, Diagnostic.INFO | Diagnostic.WARNING | Diagnostic.ERROR) {
+			ErrorDialog dialog = new ErrorDialog(shell, "Test Case Generation Complete", 
+					null, rootStatus, IStatus.INFO | IStatus.WARNING | IStatus.ERROR) {
 				public void create() {
 					super.create();
-					getShell().getDisplay().asyncExec(new Runnable() {
-						public void run() {
-							buttonPressed(IDialogConstants.DETAILS_ID);
-						}
-					});
+					getShell().getDisplay().asyncExec(() -> buttonPressed(IDialogConstants.DETAILS_ID));
 				}
 			};
 				

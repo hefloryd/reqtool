@@ -1,49 +1,52 @@
 package com.rtlabs.reqtool.ui.editors;
 
+import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.core.databinding.DataBindingContext;
+import org.eclipse.core.databinding.observable.value.IObservableValue;
+import org.eclipse.core.databinding.observable.value.WritableValue;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.common.command.BasicCommandStack;
-import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.databinding.EMFDataBindingContext;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.util.EContentAdapter;
+import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
 import org.eclipse.emf.edit.domain.EditingDomain;
-import org.eclipse.emf.edit.domain.IEditingDomainProvider;
 import org.eclipse.emf.edit.provider.ComposedAdapterFactory;
-import org.eclipse.emf.edit.provider.ReflectiveItemProviderAdapterFactory;
-import org.eclipse.emf.edit.provider.resource.ResourceItemProviderAdapterFactory;
 import org.eclipse.emf.edit.ui.util.EditUIUtil;
-import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.nebula.widgets.nattable.NatTable;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
-import org.eclipse.ui.part.EditorPart;
+import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.statushandlers.StatusManager;
 
+import com.rtlabs.common.edit_support.EditContext;
 import com.rtlabs.reqtool.model.requirements.Specification;
 import com.rtlabs.reqtool.model.requirements.provider.RequirementsItemProviderAdapterFactory;
+import com.rtlabs.reqtool.ui.Activator;
 
 /**
  * An editor which displays a table of requirements.
  */
-public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvider {
-	public static final Object ID = "com.rtlabs.reqtool.ui.editor";
+public class SpreadSheetEditor extends FormEditor implements EditContext {
+	public static final Object EDITOR_ID = "com.rtlabs.reqtool.ui.editor";
 
 	private AdapterFactoryEditingDomain editingDomain;
 	private ComposedAdapterFactory adapterFactory;
+	private DataBindingContext dataBindingContext = new EMFDataBindingContext();
 
-	private Specification specification;
+	private WritableValue<Specification> specification;
 	
 	public SpreadSheetEditor() {
 		initializeEditingDomain();
@@ -51,11 +54,7 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 	
 	protected void initializeEditingDomain() {
 		// Create an adapter factory that yields item providers.
-		adapterFactory = new ComposedAdapterFactory(ComposedAdapterFactory.Descriptor.Registry.INSTANCE);
-
-		adapterFactory.addAdapterFactory(new ResourceItemProviderAdapterFactory());
-		adapterFactory.addAdapterFactory(new RequirementsItemProviderAdapterFactory());
-		adapterFactory.addAdapterFactory(new ReflectiveItemProviderAdapterFactory());
+		adapterFactory = Activator.createStandardAdaperFactory(new RequirementsItemProviderAdapterFactory());
 
 		// Create the command stack that will notify this editor as commands are executed.
 		BasicCommandStack commandStack = new BasicCommandStack();
@@ -67,6 +66,9 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 
 		// Create the editing domain with a special command stack.
 		editingDomain = new AdapterFactoryEditingDomain(adapterFactory, commandStack, new HashMap<>());
+
+		// Makes resource tolerate unknown features in the files. Report these in the GUI instead. 
+		editingDomain.getResourceSet().getLoadOptions().put(XMLResource.OPTION_RECORD_UNKNOWN_FEATURE, true);
 	}
 
 	@Override
@@ -99,9 +101,7 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 			((BasicCommandStack)editingDomain.getCommandStack()).saveIsDone();
 			firePropertyChange(IEditorPart.PROP_DIRTY);
 			
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
+		} catch (InterruptedException | InvocationTargetException e) {
 			e.printStackTrace();
 		}
 	}
@@ -111,15 +111,18 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 	}
 
 	@Override
-	public void init(IEditorSite site, IEditorInput input) {
-		setSite(site);
-		setInputWithNotify(input);
-		setPartName(input.getName());
+	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
+		super.init(site, input);
+//		setSite(site);
+//		setInputWithNotify(input);
+//		setPartName(input.getName());
+		
+		createModel();
 	}
 
 	@Override
 	public boolean isDirty() {
-		return ((BasicCommandStack)editingDomain.getCommandStack()).isSaveNeeded();
+		return ((BasicCommandStack) editingDomain.getCommandStack()).isSaveNeeded();
 	}
 
 	@Override
@@ -127,47 +130,45 @@ public class SpreadSheetEditor extends EditorPart implements IEditingDomainProvi
 		return false;
 	}
 
-	public void createModel() {
+	private void createModel() {
 		URI resourceURI = EditUIUtil.getURI(getEditorInput(), editingDomain.getResourceSet().getURIConverter());	
 		Resource resource = editingDomain.getResourceSet().getResource(resourceURI, true);
-		specification = (Specification) resource.getContents().get(0);
+		specification = new WritableValue<>((Specification) resource.getContents().get(0), SPECIFICATION);
 	}
 	
-	@Override
-	public void createPartControl(Composite parent) {
-		parent.setLayout(new GridLayout());
-
-		// Create/load the model
-		createModel();
-
-		RequirementTableBuilder tableBuilder = new RequirementTableBuilder(adapterFactory, specification, parent, getSite());
-		tableBuilder.build();
-		NatTable natTable = tableBuilder.getTable();
-		
-		getSite().setSelectionProvider(tableBuilder.getRowSelectionProvider());
-
-		// Listen to model changes, refresh UI
-		specification.eAdapters().add(new EContentAdapter() {
-			@Override
-			public void notifyChanged(Notification notification) {
-				super.notifyChanged(notification);
-				natTable.refresh();
-			}
-		});
-
-		GridDataFactory.fillDefaults().grab(true, true).applyTo(natTable);
-	}
-
-
 	@Override
 	public void setFocus() {
 	}
 	
-	public Specification getSpecification() {
-		return specification;
+	@Override
+	protected void addPages() {
+		try {
+			addPage(new SpecificationDetailsPage(this, getSpecification()));
+			addPage(new SpreadSheetPage(this));
+		} catch (PartInitException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
+	@Override
+	public DataBindingContext getDataBindingContext() {
+		return dataBindingContext;
+	}
+
+	@Override
+	public AdapterFactory getAdapterFactory() {
+		return adapterFactory;
+	}
+
 	public EditingDomain getEditingDomain() {
 		return editingDomain;
+	}
+
+	public IObservableValue<Specification> getSpecification() {
+		return specification;
+	}
+
+	public Specification getSpecificationValue() {
+		return getSpecification().getValue();
 	}
 }
