@@ -85,7 +85,7 @@
          point="org.eclipse.ui.newWizards">
       <category
             id="com.rtlabs.reqtool.ui.category"
-            name="Requirements">
+            name="ReqTool">
       </category>
       <wizard
             category="com.rtlabs.reqtool.ui.category"
@@ -138,6 +138,41 @@
             <command commandId="com.rtlabs.reqtool.ui.generateRobotTestCase" style="push"/>
          </toolbar>
       </menuContribution>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated model -->
+      <package
+            uri="com.rtlabs.reqtool.ui.model.wizards"
+            class="com.rtlabs.reqtool.ui.model.wizards.WizardsPackage"
+            genModel="src/com/rtlabs/reqtool/ui/wizards/wizards_model.xcore"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.edit.itemProviderAdapterFactories">
+      <!-- @generated model -->
+      <factory
+            uri="com.rtlabs.reqtool.ui.model.wizards"
+            class="com.rtlabs.reqtool.ui.model.wizards.provider.WizardsItemProviderAdapterFactory"
+            supportedTypes=
+              "org.eclipse.emf.edit.provider.IEditingDomainItemProvider
+               org.eclipse.emf.edit.provider.IStructuredItemContentProvider
+               org.eclipse.emf.edit.provider.ITreeItemContentProvider
+               org.eclipse.emf.edit.provider.IItemLabelProvider
+               org.eclipse.emf.edit.provider.IItemPropertySource"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.exportWizards">
+      <wizard
+            category="com.rtlabs.reqtool.ui.category"
+            class="com.rtlabs.reqtool.ui.wizards.GenerateSpecificationDocumentWizard"
+            icon="icons/generate_code_large.png"
+            id="com.rtlabs.reqtool.ui.wizard.generateSpecificationDocument"
+            name="Generate Specification Document">
+      </wizard>
+      <category
+            id="com.rtlabs.reqtool.ui.category"
+            name="ReqTool">
+      </category>
    </extension>
 
 </plugin>

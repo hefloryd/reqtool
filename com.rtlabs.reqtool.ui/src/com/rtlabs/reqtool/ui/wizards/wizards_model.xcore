@@ -1,0 +1,30 @@
+/**
+ * This file contains the view model(s) for the wizards package.
+ */
+
+@GenModel(modelDirectory="/com.rtlabs.reqtool.ui/src-gen")
+@GenModel(editDirectory="/com.rtlabs.reqtool.ui/src-gen")
+@GenModel(updateClasspath="false")
+@GenModel(bundleManifest="false")
+@GenModel(suppressGenModelAnnotations="false")
+@GenModel(complianceLevel="8.0")
+
+package com.rtlabs.reqtool.ui.model.wizards
+import java.util.Map
+import org.eclipse.emf.common.util.DiagnosticChain
+import org.eclipse.emf.common.util.BasicDiagnostic
+
+type DiagnosticChain wraps DiagnosticChain
+type Map wraps Map<?,?>
+type BasicDiagnostic wraps BasicDiagnostic
+
+class ExportDocumentViewModel {
+	String outputFile = ""
+	String sourceSpecificationFile = ""
+	
+	boolean exportOnlySelectedRequirements = "false"
+	
+	op boolean validateObject(DiagnosticChain chain, Map context) {
+		return com.rtlabs.reqtool.ui.wizards.GenerateSpecificationDocumentWizard.validateObject(this, chain, context)
+	}
+}
