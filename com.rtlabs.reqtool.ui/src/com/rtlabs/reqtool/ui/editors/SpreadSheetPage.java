@@ -1,7 +1,10 @@
 package com.rtlabs.reqtool.ui.editors;
 
+import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.ecore.util.EContentAdapter;
+import org.eclipse.emf.edit.domain.EditingDomain;
+import org.eclipse.emf.edit.domain.IEditingDomainProvider;
 import org.eclipse.nebula.widgets.nattable.NatTable;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -12,24 +15,28 @@ import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 
+import com.rtlabs.common.edit_support.EditContext;
+import com.rtlabs.reqtool.model.requirements.Specification;
 import com.rtlabs.reqtool.ui.Activator;
 
 /**
  * Displays and edits a list of requirements.
  */
-class SpreadSheetPage extends FormPage {
-	private SpreadSheetEditor editor;
+class SpreadSheetPage extends FormPage implements IEditingDomainProvider {
+	private EditContext editContext;
+	private IObservableValue<Specification> specification;
 
 
-	public SpreadSheetPage(SpreadSheetEditor editor) {
+	public SpreadSheetPage(SpreadSheetEditor editor, IObservableValue<Specification> specification) {
 		super(editor, Activator.PLUGIN_ID, "Requirements");
-		this.editor = editor;
+		this.editContext = editor;
+		this.specification = specification;
 	}
 
 	@Override
 	public void init(IEditorSite site, IEditorInput input) {
-		setSite(site);
-		// super.init(site, input);
+		// super.init(new MultiPageEditorSite((MultiPageEditorPart) site.getPart(), this), input);
+		super.init(site, input);
 	}
 	
 	@Override
@@ -44,14 +51,16 @@ class SpreadSheetPage extends FormPage {
 
 		// Create/load the model
 
-		RequirementTableBuilder tableBuilder = new RequirementTableBuilder(editor.getAdapterFactory(), editor.getSpecificationValue(), body, getSite());
+		RequirementTableBuilder tableBuilder = new RequirementTableBuilder(editContext.getAdapterFactory(), 
+			specification.getValue(), body, getSite());
+		
 		tableBuilder.build();
 		NatTable natTable = tableBuilder.getTable();
 		
 		getSite().setSelectionProvider(tableBuilder.getRowSelectionProvider());
 
 		// Listen to model changes, refresh UI
-		editor.getSpecificationValue().eAdapters().add(new EContentAdapter() {
+		specification.getValue().eAdapters().add(new EContentAdapter() {
 			@Override
 			public void notifyChanged(Notification notification) {
 				super.notifyChanged(notification);
@@ -59,4 +68,16 @@ class SpreadSheetPage extends FormPage {
 			}
 		});
 	}
+
+	@Override
+	public EditingDomain getEditingDomain() {
+		return editContext.getEditingDomain();
+	}
+	
+	@Override
+	public boolean isEditor() {
+		// Return true to avoid being initialised a second time in FormEditor, with the wrong editor site
+		return true;
+	}
+
 }

@@ -11,7 +11,7 @@ import com.rtlabs.reqtool.ui.highlighter.UserStoryHighlighter;
 import com.rtlabs.reqtool.util.Result;
 
 /**
- * Validates the body of a requirment according to the {@link RequirementType} of that requirement.
+ * Validates the body of a requirment according to its {@link RequirementType}.
  */
 public class RequirementTypeValidator extends DataValidator {
 
@@ -37,6 +37,7 @@ public class RequirementTypeValidator extends DataValidator {
 		}
 		
 		if (highlightResult == null) {
+			// Requirement is not something that can be validated, just accept it
 			return true;
 		}
 

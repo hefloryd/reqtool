@@ -26,21 +26,19 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.statushandlers.StatusManager;
 
 import com.rtlabs.common.edit_support.EditContext;
 import com.rtlabs.reqtool.model.requirements.Specification;
-import com.rtlabs.reqtool.model.requirements.provider.RequirementsItemProviderAdapterFactory;
 import com.rtlabs.reqtool.ui.Activator;
 
 /**
  * An editor which displays a table of requirements.
  */
 public class SpreadSheetEditor extends FormEditor implements EditContext {
-	public static final Object EDITOR_ID = "com.rtlabs.reqtool.ui.editor";
+	public static final String EDITOR_ID = "com.rtlabs.reqtool.ui.editor";
 
 	private AdapterFactoryEditingDomain editingDomain;
 	private ComposedAdapterFactory adapterFactory;
@@ -54,14 +52,14 @@ public class SpreadSheetEditor extends FormEditor implements EditContext {
 	
 	protected void initializeEditingDomain() {
 		// Create an adapter factory that yields item providers.
-		adapterFactory = Activator.createStandardAdaperFactory(new RequirementsItemProviderAdapterFactory());
+		adapterFactory = Activator.createStandardAdaperFactory();
 
 		// Create the command stack that will notify this editor as commands are executed.
 		BasicCommandStack commandStack = new BasicCommandStack();
 
 		// Add a listener to set the most recent command's affected objects to be the selection of the viewer with focus.
 		commandStack.addCommandStackListener(
-			event -> PlatformUI.getWorkbench().getDisplay().asyncExec(
+			event -> getSite().getShell().getDisplay().asyncExec(
 				() -> firePropertyChange(IEditorPart.PROP_DIRTY)));
 
 		// Create the editing domain with a special command stack.
@@ -97,8 +95,8 @@ public class SpreadSheetEditor extends FormEditor implements EditContext {
 		try {
 			operation.run(monitor);
 			
-			// Refresh the necessary state.
-			((BasicCommandStack)editingDomain.getCommandStack()).saveIsDone();
+			// Refresh the necessary state
+			((BasicCommandStack) editingDomain.getCommandStack()).saveIsDone();
 			firePropertyChange(IEditorPart.PROP_DIRTY);
 			
 		} catch (InterruptedException | InvocationTargetException e) {
@@ -109,13 +107,11 @@ public class SpreadSheetEditor extends FormEditor implements EditContext {
 	@Override
 	public void doSaveAs() {
 	}
-
+	
 	@Override
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
 		super.init(site, input);
-//		setSite(site);
-//		setInputWithNotify(input);
-//		setPartName(input.getName());
+		setPartName(input.getName());
 		
 		createModel();
 	}
@@ -137,14 +133,11 @@ public class SpreadSheetEditor extends FormEditor implements EditContext {
 	}
 	
 	@Override
-	public void setFocus() {
-	}
-	
-	@Override
 	protected void addPages() {
 		try {
-			addPage(new SpecificationDetailsPage(this, getSpecification()));
-			addPage(new SpreadSheetPage(this));
+			// Use this instead of addPage(IFormPage) to get proper initialisation  
+			addPage(new SpecificationDetailsPage(this, getSpecification()), getEditorInput());
+			addPage(new SpreadSheetPage(this, getSpecification()), getEditorInput());
 		} catch (PartInitException e) {
 			throw new RuntimeException(e);
 		}

@@ -29,12 +29,12 @@
          </view>
       </perspectiveExtension>
    </extension>
-   
+
    <extension
          point="org.eclipse.ui.editors">
       <editor
             class="com.rtlabs.reqtool.ui.editors.SpreadSheetEditor"
-            contributorClass="com.rtlabs.reqtool.ui.editors.SpreadSheetActionBarContributor"
+            contributorClass="com.rtlabs.reqtool.ui.editors.SpecificationEditorActionBarContributor"
             default="false"
             extensions="spec"
             id="com.rtlabs.reqtool.ui.editor"
@@ -140,6 +140,7 @@
       </menuContribution>
    </extension>
 
+   <!-- Reqister wizards view model EMF package -->
    <extension point="org.eclipse.emf.ecore.generated_package">
       <!-- @generated model -->
       <package
@@ -148,6 +149,7 @@
             genModel="src/com/rtlabs/reqtool/ui/wizards/wizards_model.xcore"/>
    </extension>
 
+   <!-- Reqister wizards view model adapter factory -->
    <extension point="org.eclipse.emf.edit.itemProviderAdapterFactories">
       <!-- @generated model -->
       <factory
@@ -160,6 +162,8 @@
                org.eclipse.emf.edit.provider.IItemLabelProvider
                org.eclipse.emf.edit.provider.IItemPropertySource"/>
    </extension>
+   
+   <!-- Export wizards -->
    <extension
          point="org.eclipse.ui.exportWizards">
       <wizard
