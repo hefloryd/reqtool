@@ -1,4 +1,4 @@
-package com.rtlabs.reqtool.ui.editors;
+package com.rtlabs.reqtool.ui.editors.support;
 
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.ecore.EObject;
@@ -10,12 +10,12 @@ import org.eclipse.nebula.widgets.nattable.data.IColumnPropertyAccessor;
 /**
  * A class which gets and sets property values on EObjects. Used by NatList. 
  */
-public class SpreadSheetColumnPropertyAccessor<T extends EObject> implements IColumnPropertyAccessor<T> {
+public class RequirementTableColumnPropertyAccessor<T extends EObject> implements IColumnPropertyAccessor<T> {
 	
 	private AdapterFactory adapterFactory;
 	private String[] propertyNames;
 
-	public SpreadSheetColumnPropertyAccessor(AdapterFactory adapterFactory, String[] propertyNames) {
+	public RequirementTableColumnPropertyAccessor(AdapterFactory adapterFactory, String[] propertyNames) {
 		this.adapterFactory = adapterFactory;
 		this.propertyNames = propertyNames;
 	}

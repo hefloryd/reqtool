@@ -35,9 +35,10 @@ import com.rtlabs.reqtool.model.requirements.Specification;
 import com.rtlabs.reqtool.ui.Activator;
 
 /**
- * An editor which displays a table of requirements.
+ * An editor for the {@link Specification} entity. Contains one page with a list of requirements and 
+ * one page with specification details.
  */
-public class SpreadSheetEditor extends FormEditor implements EditContext {
+public class SpecificationEditor extends FormEditor implements EditContext {
 	public static final String EDITOR_ID = "com.rtlabs.reqtool.ui.editor";
 
 	private AdapterFactoryEditingDomain editingDomain;
@@ -46,7 +47,7 @@ public class SpreadSheetEditor extends FormEditor implements EditContext {
 
 	private WritableValue<Specification> specification;
 	
-	public SpreadSheetEditor() {
+	public SpecificationEditor() {
 		initializeEditingDomain();
 	}
 	
@@ -135,9 +136,9 @@ public class SpreadSheetEditor extends FormEditor implements EditContext {
 	@Override
 	protected void addPages() {
 		try {
-			// Use this instead of addPage(IFormPage) to get proper initialisation  
+			// Use this method instead of addPage(IFormPage) to get proper initialisation  
+			addPage(new RequirementsTablePage(this, getSpecification()), getEditorInput());
 			addPage(new SpecificationDetailsPage(this, getSpecification()), getEditorInput());
-			addPage(new SpreadSheetPage(this, getSpecification()), getEditorInput());
 		} catch (PartInitException e) {
 			throw new RuntimeException(e);
 		}

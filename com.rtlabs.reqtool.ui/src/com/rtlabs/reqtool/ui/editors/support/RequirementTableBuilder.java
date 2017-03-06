@@ -1,4 +1,4 @@
-package com.rtlabs.reqtool.ui.editors;
+package com.rtlabs.reqtool.ui.editors.support;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -76,7 +76,7 @@ import com.rtlabs.reqtool.ui.Activator;
 /**
  * Creates and configures a {@link NatTable} that will show a list of {@link Requirement} objects.
  */
-class RequirementTableBuilder {
+public class RequirementTableBuilder {
 	
 	private static final String LABEL_BODY = "_BODY"; // BODY seems to affect entire bodyDataLayer
 	private static final String LABEL_TYPE = "TYPE";
@@ -114,7 +114,7 @@ class RequirementTableBuilder {
 		propertyToLabelMap.put("children", "Children");
 		propertyToLabelMap.put("created", "Created");
 
-		IColumnAccessor<Requirement> columnPropertyAccessor = new SpreadSheetColumnPropertyAccessor<>(adapterFactory, propertyNames);
+		IColumnAccessor<Requirement> columnPropertyAccessor = new RequirementTableColumnPropertyAccessor<>(adapterFactory, propertyNames);
 		
 		IRowDataProvider<Requirement> bodyDataProvider = new ListDataProvider<>(
 			specification.getRequirements(), columnPropertyAccessor);
@@ -472,7 +472,7 @@ class RequirementTableBuilder {
 				org.eclipse.ui.part.ResourceTransfer.getInstance(),
 				org.eclipse.emf.edit.ui.dnd.LocalTransfer.getInstance()
 		};
-		SpreadSheetDropTargetListener dropTargetListener = new SpreadSheetDropTargetListener(natTable, gridLayer, spec, bodyDataLayer);
+		RequirementTableDropTargetListener dropTargetListener = new RequirementTableDropTargetListener(natTable, gridLayer, spec, bodyDataLayer);
 		natTable.addDropSupport(DND.DROP_COPY, dropTransfers, dropTargetListener);
 	}
 
@@ -480,7 +480,7 @@ class RequirementTableBuilder {
 		Transfer[] dragTransfers = { 
 				org.eclipse.emf.edit.ui.dnd.LocalTransfer.getInstance() 
 		};
-		SpreadSheetDragSourceListener dragSourceListener = new SpreadSheetDragSourceListener(bodyLayerStack.getSelectionLayer(), natTable);
+		RequirementTableDragSourceListener dragSourceListener = new RequirementTableDragSourceListener(bodyLayerStack.getSelectionLayer(), natTable);
 		natTable.addDragSupport(DND.DROP_COPY, dragTransfers, dragSourceListener);
 	}
 

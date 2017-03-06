@@ -1,4 +1,4 @@
-package com.rtlabs.reqtool.ui.editors;
+package com.rtlabs.reqtool.ui.editors.support;
 
 import org.eclipse.emf.edit.domain.IEditingDomainProvider;
 import org.eclipse.emf.edit.ui.action.RedoAction;

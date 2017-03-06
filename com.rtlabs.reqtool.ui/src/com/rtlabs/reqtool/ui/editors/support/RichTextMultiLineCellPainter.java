@@ -1,4 +1,4 @@
-package com.rtlabs.reqtool.ui.editors;
+package com.rtlabs.reqtool.ui.editors.support;
 
 import org.eclipse.nebula.widgets.nattable.config.IConfigRegistry;
 import org.eclipse.nebula.widgets.nattable.extension.nebula.richtext.RichTextCellPainter;
@@ -10,9 +10,9 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Rectangle;
 
 /**
- * A painter which adjusts the hight of a cell to that of the painted markup. 
+ * A NatTable cell patiner which adjusts the hight of a cell to that of the painted markup. 
  */
-class RichTextMultiLineCellPainter extends RichTextCellPainter {
+public class RichTextMultiLineCellPainter extends RichTextCellPainter {
 
 	private final boolean adjustCellHeight;
 

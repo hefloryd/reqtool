@@ -18,16 +18,17 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 import com.rtlabs.common.edit_support.EditContext;
 import com.rtlabs.reqtool.model.requirements.Specification;
 import com.rtlabs.reqtool.ui.Activator;
+import com.rtlabs.reqtool.ui.editors.support.RequirementTableBuilder;
 
 /**
  * Displays and edits a list of requirements.
  */
-class SpreadSheetPage extends FormPage implements IEditingDomainProvider {
+class RequirementsTablePage extends FormPage implements IEditingDomainProvider {
 	private EditContext editContext;
 	private IObservableValue<Specification> specification;
 
 
-	public SpreadSheetPage(SpreadSheetEditor editor, IObservableValue<Specification> specification) {
+	public RequirementsTablePage(SpecificationEditor editor, IObservableValue<Specification> specification) {
 		super(editor, Activator.PLUGIN_ID, "Requirements");
 		this.editContext = editor;
 		this.specification = specification;

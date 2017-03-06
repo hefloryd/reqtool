@@ -10,15 +10,15 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.rtlabs.reqtool.model.requirements.Requirement;
 import com.rtlabs.reqtool.model.requirements.Specification;
-import com.rtlabs.reqtool.ui.editors.SpreadSheetEditor;
+import com.rtlabs.reqtool.ui.editors.SpecificationEditor;
 
 public class AddRequirement extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
-		if (activeEditor instanceof SpreadSheetEditor) {
-			SpreadSheetEditor editor = (SpreadSheetEditor) activeEditor;
+		if (activeEditor instanceof SpecificationEditor) {
+			SpecificationEditor editor = (SpecificationEditor) activeEditor;
 			Specification specification = editor.getSpecificationValue();
 			EditingDomain editingDomain = editor.getEditingDomain();
 			Requirement requirement = specification.createNewRequirement();

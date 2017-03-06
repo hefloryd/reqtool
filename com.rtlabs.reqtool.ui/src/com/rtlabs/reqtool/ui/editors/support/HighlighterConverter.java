@@ -1,4 +1,4 @@
-package com.rtlabs.reqtool.ui.editors;
+package com.rtlabs.reqtool.ui.editors.support;
 
 import java.util.Arrays;
 
@@ -17,7 +17,7 @@ import com.rtlabs.reqtool.util.ReqtoolUtil;
 import com.rtlabs.reqtool.util.Result;
 
 /**
- * A display converter which performs Gherkin syntax highlighting.
+ * A display converter for a NatTable which performs Gherkin syntax highlighting.
  */
 public class HighlighterConverter implements IDisplayConverter {
 

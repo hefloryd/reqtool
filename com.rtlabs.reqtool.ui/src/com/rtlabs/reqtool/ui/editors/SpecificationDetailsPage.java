@@ -32,7 +32,7 @@ class SpecificationDetailsPage extends FormPage implements IEditingDomainProvide
 	private EditContext editContext;
 	private IObservableValue<Specification> specification;
 
-	public SpecificationDetailsPage(SpreadSheetEditor editor, IObservableValue<Specification> spec) {
+	public SpecificationDetailsPage(SpecificationEditor editor, IObservableValue<Specification> spec) {
 		super(editor, Activator.PLUGIN_ID + ".specificationDetailsPage", "Specification Details");
 		this.editContext = editor;
 		this.specification = spec;

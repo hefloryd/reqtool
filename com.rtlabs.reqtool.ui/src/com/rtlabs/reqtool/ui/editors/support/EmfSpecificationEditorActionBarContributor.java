@@ -1,4 +1,4 @@
-package com.rtlabs.reqtool.ui.editors;
+package com.rtlabs.reqtool.ui.editors.support;
 
 import org.eclipse.emf.edit.ui.action.EditingDomainActionBarContributor;
 
@@ -8,8 +8,8 @@ import org.eclipse.emf.edit.ui.action.EditingDomainActionBarContributor;
  * TODO: This file is not used for the moment, because it messes ut edit action in text field.
  * 
  */
-public class SpreadSheetActionBarContributor extends EditingDomainActionBarContributor {
-	public SpreadSheetActionBarContributor() {
+public class EmfSpecificationEditorActionBarContributor extends EditingDomainActionBarContributor {
+	public EmfSpecificationEditorActionBarContributor() {
 		super(ADDITIONS_LAST_STYLE);
 	}
 }

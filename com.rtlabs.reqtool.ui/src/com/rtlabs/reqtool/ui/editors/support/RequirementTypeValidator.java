@@ -1,4 +1,4 @@
-package com.rtlabs.reqtool.ui.editors;
+package com.rtlabs.reqtool.ui.editors.support;
 
 import org.eclipse.nebula.widgets.nattable.data.IRowDataProvider;
 import org.eclipse.nebula.widgets.nattable.data.validate.DataValidator;
@@ -11,7 +11,7 @@ import com.rtlabs.reqtool.ui.highlighter.UserStoryHighlighter;
 import com.rtlabs.reqtool.util.Result;
 
 /**
- * Validates the body of a requirment according to its {@link RequirementType}.
+ * A NatTable validator which validates the body of a requirment according to its {@link RequirementType}.
  */
 public class RequirementTypeValidator extends DataValidator {
 
