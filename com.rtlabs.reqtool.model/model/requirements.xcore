@@ -106,8 +106,10 @@ class Specification {
 	contains Requirement[] requirements opposite specification
 	contains ArtifactContainer artifactContainer
 	
+    @GenModel(propertyDescription="-")
 	String documentPrefixFile = ""
-	String doucmentPostfixFile = ""
+    @GenModel(propertyDescription="-")
+	String documentSuffixFile = ""
 
 	int nextIdentifier
 	op Requirement createNewRequirement()

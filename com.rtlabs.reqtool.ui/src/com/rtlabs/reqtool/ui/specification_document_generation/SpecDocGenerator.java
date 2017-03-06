@@ -59,28 +59,28 @@ public class SpecDocGenerator {
 	 */
 	public static String run(Specification spec, List<Requirement> selectedReqs, AdapterFactory adapterFactory) {
 		CharArrayWriter writer = new CharArrayWriter();
-		PrintWriter b = new PrintWriter(writer);
+		PrintWriter out = new PrintWriter(writer);
 		DocGenerator gen = new DocGenerator(adapterFactory);
 		
-		b.println(gen.section(spec.getTitle()));
+		out.println(gen.section(spec.getTitle()));
 		
 		// Intro: Title and description
-		if (spec.getDescription() != null) b.println(spec.getDescription());
+		if (spec.getDescription() != null) out.println(spec.getDescription());
 		
-		b.println();
+		out.println();
 
-		b.println(gen.section(SPECIFICATION__REQUIREMENTS));
+		out.println(gen.section(SPECIFICATION__REQUIREMENTS));
 		
 		TableGenerator<Requirement> tableGen = gen.tableGenerator(TABLE_FEATURES, selectedReqs); 
 
 		// Table
-		b.println(tableGen.table());
+		out.println(tableGen.table());
 		
 		// Requirement list
 		for (ObjectGenerator<Requirement> objGen : gen.objectGenerators(selectedReqs)) {
-			b.println(gen.section(objGen.object().getName()));
+			out.println(gen.section(objGen.object().getName()));
 			for (EStructuralFeature f : REQ_FEATURES) {
-				b.println(objGen.featureDetails(f));
+				out.println(objGen.featureDetails(f));
 			}
 			
 			gen.endSection();

@@ -18,6 +18,7 @@ type DiagnosticChain wraps DiagnosticChain
 type Map wraps Map<?,?>
 type BasicDiagnostic wraps BasicDiagnostic
 
+@GenModel(image="false")
 class ExportDocumentViewModel {
 	String outputFile = ""
 	String sourceSpecificationFile = ""

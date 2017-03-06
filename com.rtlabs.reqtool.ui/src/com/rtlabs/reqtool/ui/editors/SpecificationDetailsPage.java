@@ -2,7 +2,7 @@ package com.rtlabs.reqtool.ui.editors;
 
 import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION__DESCRIPTION;
 import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION__DOCUMENT_PREFIX_FILE;
-import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION__DOUCMENT_POSTFIX_FILE;
+import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION__DOCUMENT_SUFFIX_FILE;
 import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION__TITLE;
 
 import org.eclipse.core.databinding.observable.value.IObservableValue;
@@ -53,11 +53,11 @@ class SpecificationDetailsPage extends FormPage {
 		container.setLayout(GridLayoutFactory.swtDefaults().numColumns(2).spacing(15, 15).create());
 		toolkit.paintBordersFor(container);
 		
-		ModelGuiBuilder<Specification> guiBuilder = new ModelGuiBuilder<>(toolkit, editor, specification);
+		ModelGuiBuilder<Specification> guiBuilder = new ModelGuiBuilder<>(toolkit, editContext, specification);
 		
 		guiBuilder.createFeatureControl(container, SPECIFICATION__TITLE);
 		guiBuilder.createFeatureControl(container, SPECIFICATION__DESCRIPTION);
 		guiBuilder.createFeatureControl(container, SPECIFICATION__DOCUMENT_PREFIX_FILE);
-		guiBuilder.createFeatureControl(container, SPECIFICATION__DOUCMENT_POSTFIX_FILE);
+		guiBuilder.createFeatureControl(container, SPECIFICATION__DOCUMENT_SUFFIX_FILE);
 	}
 }

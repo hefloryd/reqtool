@@ -49,6 +49,14 @@ public class Result<T> {
 		return new Result<>(null, statuses);
 	}
 	
+	public T getResult() {
+		return result;
+	}
+
+	public List<IStatus> getStatuses() {
+		return statuses;
+	}
+	
 	public boolean isNoErrors() {
 		return isAllLessSevere(IStatus.ERROR);
 	}
@@ -61,6 +69,10 @@ public class Result<T> {
 		return isAllLessSevere(IStatus.INFO);
 	}
 	
+	public boolean isAllLessSevere(int severity) {
+		return statuses.stream().allMatch(s -> s.getSeverity() < severity);
+	}
+	
 	public IStatus toMultiStatus(String message) {
 		return getStatuses().size() == 1
 			? getStatuses().get(0)
@@ -71,18 +83,7 @@ public class Result<T> {
 		return statuses.stream().map(s -> s.getMessage()).collect(toList());
 	}
 
-	public boolean isAllLessSevere(int severity) {
-		return statuses.stream().allMatch(s -> s.getSeverity() < severity);
-	}
-	
-	public T getResult() {
-		return result;
-	}
 
-	public List<IStatus> getStatuses() {
-		return statuses;
-	}
-	
 	public String toString() {
 		return getClass().getSimpleName() + "<" + result + ", " + statuses;
 	}
@@ -97,5 +98,13 @@ public class Result<T> {
 		}
 		
 		return statuses.get(0).getMessage();
+	}
+	
+	public <R> Result<R> castError() {
+		if (result != null) throw new IllegalStateException();
+		
+		@SuppressWarnings("unchecked")
+		Result<R> r = (Result<R>) this;
+		return r;
 	}
 }

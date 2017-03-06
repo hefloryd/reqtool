@@ -27,7 +27,7 @@ import com.google.common.primitives.Primitives;
 /**
  * Helper class for generating Markdown documents.
  */
-public class DocGenerator {
+class DocGenerator {
 	private static final String ELLIPSIS = "...";
 	
 	private final AdapterFactory adapterFactory;

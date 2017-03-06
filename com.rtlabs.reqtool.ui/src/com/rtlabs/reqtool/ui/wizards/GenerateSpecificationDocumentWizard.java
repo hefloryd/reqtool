@@ -1,3 +1,4 @@
+
 package com.rtlabs.reqtool.ui.wizards;
 
 import static com.rtlabs.reqtool.ui.model.wizards.WizardsPackage.Literals.EXPORT_DOCUMENT_VIEW_MODEL__EXPORT_ONLY_SELECTED_REQUIREMENTS;
@@ -6,9 +7,11 @@ import static com.rtlabs.reqtool.ui.model.wizards.WizardsPackage.Literals.EXPORT
 import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +30,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.emf.common.util.DiagnosticChain;
 import org.eclipse.emf.common.util.URI;
@@ -96,6 +98,8 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 	 * The supported extensions for created files.
 	 */
 	public static final String FILE_EXTENSION = "spec";
+	
+	public static String NL = System.getProperty("line.separator");
 
 	/**
 	 * This is the file creation page.
@@ -125,8 +129,8 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 		setInitialValues();
 	}
 
-	private void setInitialValues() {
 		// Get the the file of the currently edited specification, if any
+	private void setInitialValues() {
 		Optional<IResource> editorFile = Optional.ofNullable(workbench.getActiveWorkbenchWindow())
 			.map(w -> w.getActivePage())
 			.map(p -> p.getActiveEditor())
@@ -146,17 +150,80 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 		// Set output path to the selected container, or 
 		IResource outputPath = inputFile.getType() == IResource.FILE
 			? inputFile.getParent().getFile(
-				new Path(inputFile.getFullPath().removeFileExtension().addFileExtension("md").lastSegment()))
+				new org.eclipse.core.runtime.Path(inputFile.getFullPath().removeFileExtension().addFileExtension("md").lastSegment()))
 			: inputFile;
 
 		viewModel.setOutputFile(outputPath.getLocation().toOSString());
 	}
 	
 	private static Optional<IFile> fileObject(String filePath) {
-		return Optional.ofNullable(ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(filePath)));
+		return Optional.ofNullable(ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(
+			new org.eclipse.core.runtime.Path(filePath)));
 	}
 
 	private Result<Boolean> generateSpecDoc() throws CoreException, IOException {
+		Result<Specification> specResult = readSpec();
+		if (!specResult.isAllOk()) return specResult.castError();
+		Specification spec = specResult.getResult();
+
+		Path specFile = Paths.get(
+			ResourcesPlugin.getWorkspace().getRoot().findMember(viewModel.getSourceSpecificationFile()).getLocationURI());
+		
+		Result<Path> outputResult = checkedToPath(viewModel.getOutputFile());
+		if (!outputResult.isAllOk()) return Result.failure("The output path is invalid: " + outputResult.getMessage());
+		Path outputFile = outputResult.getResult();
+
+		String docPrefix = "";
+		if (!spec.getDocumentPrefixFile().isEmpty()) {
+			Result<Path> prefixPath = toExistingFile(spec.getDocumentPrefixFile(), 
+				specFile.getParent(), "Document prefix file");
+			if (!prefixPath.isAllOk()) return prefixPath.castError();
+			docPrefix = readFile(prefixPath.getResult(), StandardCharsets.UTF_8);
+		}
+		
+		String docSuffix = "";
+		if (!spec.getDocumentSuffixFile().isEmpty()) {
+			Result<Path> postfixPath = toExistingFile(spec.getDocumentSuffixFile(), 
+				specFile.getParent(), "Document suffix file");
+			if (!postfixPath.isAllOk()) return postfixPath.castError();
+			docSuffix = readFile(postfixPath.getResult(), StandardCharsets.UTF_8);
+		}
+		
+		if (Files.exists(outputFile)) {
+			if (!promptOverwrite(outputFile)) return Result.success(false);
+		}
+
+		outputDocument(spec, outputFile, docPrefix, docSuffix);
+
+		updateWorkbench(outputFile);
+		
+		return Result.success(true);
+	}
+
+	private void outputDocument(Specification spec, Path outputFile, String docPrefix, String docSuffix) throws IOException {
+		// Take the selected requirements if that is selected in the GUI, or all reqs in the spec
+		List<Requirement> reqs = viewModel.isExportOnlySelectedRequirements()
+			? Arrays.stream(selection.toArray())
+				.filter(e -> e instanceof Requirement)
+				.map(e -> (Requirement)  e).collect(toList())
+			: spec.getRequirements();
+
+		String generatedText = SpecDocGenerator.run(spec, reqs, Activator.createStandardAdaperFactory());
+		
+		String doc = docPrefix + generatedText + docSuffix;
+		
+		Files.createDirectories(outputFile.getParent());
+		Files.write(outputFile, doc.getBytes(StandardCharsets.UTF_8));
+	}
+
+	private boolean promptOverwrite(Path outputFile) {
+		boolean overwriteOk = MessageDialog.openConfirm(getShell(), "Overwrite file?", 
+			"The file output already exists. Should it be overwritten?\n\n"
+			+ "File: " + outputFile);
+		return overwriteOk;
+	}
+	
+	private Result<Specification> readSpec() {
 		ResourceSet resourceSet = new ResourceSetImpl();
 		resourceSet.getLoadOptions().put(XMLResource.OPTION_RECORD_UNKNOWN_FEATURE, true);
 		String outputFileStr = viewModel.getSourceSpecificationFile();
@@ -164,45 +231,12 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 		Resource resource = resourceSet.getResource(fileURI, true);
 		Specification spec = (Specification) resource.getContents().get(0);
 
-		if (spec == null) {
-			return Result.failure("The selected specification file could not be read.");
-		}
-
-		Result<java.nio.file.Path> outputResult = checkedToPath(viewModel.getOutputFile());
-		
-		if (!outputResult.isAllOk()) {
-			return Result.failure("The output path is invalid: " + outputResult.getMessage());
-		}
-		
-		java.nio.file.Path outputFile = outputResult.getResult();
-
-		if (Files.exists(outputFile)) {
-			boolean overwriteOk = MessageDialog.openConfirm(getShell(), "Overwrite file?", 
-				"The file output already exists. Should it be overwritten?\n\n"
-				+ "File: " + outputFile);
-			if (!overwriteOk) return Result.success(false);
-		}
-		
-		Files.createDirectories(outputFile.getParent());
-		
-		List<Requirement> reqs = viewModel.isExportOnlySelectedRequirements()
-			? Arrays.stream(selection.toArray())
-				.filter(e -> e instanceof Requirement)
-				.map(e -> (Requirement)  e).collect(toList())
-			: spec.getRequirements();
-		
-		String generatedText = SpecDocGenerator.run(spec, reqs, Activator.createStandardAdaperFactory());
-		
-		String doc = spec.getDocumentPrefixFile() + generatedText + spec.getDoucmentPostfixFile();
-		
-		Files.write(outputFile, doc.getBytes(StandardCharsets.ISO_8859_1));
-
-		updateWorkbench(outputFile);
-		
-		return Result.success(true);
+		return spec == null  
+			? Result.failure("The selected specification file could not be read.")
+			: Result.success(spec);
 	}
 
-	private void updateWorkbench(java.nio.file.Path outputFile) throws CoreException {
+	private void updateWorkbench(Path outputFile) throws CoreException {
 		IFile outputWorkspaceFile = fileObject(outputFile.toString()).orElse(null);
 		
 		if (outputWorkspaceFile != null) {
@@ -315,12 +349,9 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 				dialog.setTitle("Specification File Selection");
 				dialog.setMessage("Select the specification file which will be exported as a document.");
 				dialog.setInput(ResourcesPlugin.getWorkspace().getRoot());
-				
 
-				{
-					IResource intputFile = ResourcesPlugin.getWorkspace().getRoot().findMember(viewModel.getSourceSpecificationFile());
-					if (intputFile != null) dialog.setInitialSelection(intputFile);
-				}
+				IResource intputFile = ResourcesPlugin.getWorkspace().getRoot().findMember(viewModel.getSourceSpecificationFile());
+				if (intputFile != null) dialog.setInitialSelection(intputFile);
 			
 				dialog.setQuickSelectionMode(true);
 				dialog.addFilter(typedPredicateFilter(IFile.class, true,  
@@ -349,11 +380,15 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 		}
 	}
 	
-	public static <T> ViewerFilter typedPredicateFilter(Class<T> c, boolean b, Predicate<? super T> p) {
+	public static <T> ViewerFilter typedPredicateFilter(
+		Class<T> filterClass, 
+		boolean resultForOtherClasses, 
+		Predicate<? super T> fileterPredicate)
+	{
 		return new ViewerFilter() {
 			@Override
 			public boolean select(Viewer viewer, Object parentElement, Object element) {
-				return c.isInstance(element) ? p.test(c.cast(element)) : b;
+				return filterClass.isInstance(element) ? fileterPredicate.test(filterClass.cast(element)) : resultForOtherClasses;
 			}
 		};
 	}
@@ -386,6 +421,7 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 		}
 		
 		IResource file = ResourcesPlugin.getWorkspace().getRoot().findMember(model.getSourceSpecificationFile());
+		
 		if (file == null) {
 			reporter.error("The source file does not exist.");
 			return false;
@@ -404,7 +440,24 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 		return true;
 	}
 
-	private static Result<java.nio.file.Path> checkedToPath(String path) {
+	private static Result<Path> toExistingFile(String pathStr, Path resolveAgainst, String guiName) {
+		try {
+			Path path = Paths.get(pathStr);
+
+			if (!path.isAbsolute()) {
+				path = resolveAgainst.resolve(path);
+			}
+			
+			if (!Files.exists(path)) return Result.failure(guiName + "'" + path + "'." +  " does not exist.");
+			if (!Files.isRegularFile(path)) return Result.failure(guiName + "'" + path + "'." +  " is not a file.");
+			
+			return Result.success(path);
+		} catch (InvalidPathException e) {
+			return Result.failure(guiName + ": " + e.getMessage());
+		}
+	}
+	
+	private static Result<Path> checkedToPath(String path) {
 		try {
 			return Result.success(Paths.get(path));
 		} catch (InvalidPathException e) {
@@ -419,7 +472,7 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 			return false;
 		}
 		
-		Result<java.nio.file.Path> outPath = checkedToPath(model.getOutputFile());
+		Result<Path> outPath = checkedToPath(model.getOutputFile());
 		
 		if (!outPath.isAllOk() || !outPath.getResult().isAbsolute()) {
 			reporter.error("The output file  path is invalid: " + outPath.getMessage());
@@ -483,7 +536,8 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 			   .map(o -> ((IAdaptable) o).getAdapter(IResource.class))
 			   .findAny();
 	}
-
-
-
+	
+	static String readFile(Path path, Charset encoding) throws IOException {
+		return new String(Files.readAllBytes(path), encoding);
+	}
 }
