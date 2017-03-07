@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.UpdateValueStrategy;
-import org.eclipse.core.databinding.conversion.Converter;
 import org.eclipse.core.databinding.observable.Observables;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.property.value.IValueProperty;
@@ -13,6 +12,7 @@ import org.eclipse.emf.databinding.EMFProperties;
 import org.eclipse.emf.databinding.FeaturePath;
 import org.eclipse.emf.databinding.edit.EMFEditProperties;
 import org.eclipse.emf.databinding.edit.IEMFEditValueProperty;
+import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EEnum;
@@ -39,14 +39,10 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 
-import com.rtlabs.common.databinding.HandleUnresolvedProperty;
 import com.rtlabs.common.databinding.ValidationUtil;
-import com.rtlabs.common.databinding.HandleUnresolvedProperty.UnresolvedAction;
 import com.rtlabs.common.databinding.ValidationUtil.ObjectToStringConverter;
 import com.rtlabs.common.edit_support.CommandOperation;
-import com.rtlabs.common.edit_support.CommandOperations;
 import com.rtlabs.common.edit_support.EditContext;
-import com.rtlabs.common.util.DialogCreator;
 
 /**
  * Helps with the creation and data binding of GUI controls from information in the model.
@@ -68,6 +64,7 @@ public class ModelGuiBuilder<T extends EObject> {
 	private boolean isEditable = true;
 	private int modelUpdateDelayMs = 500;
 	private int widthHint = 150;
+	private String selectButtonLabel = "Select...";
 
 	@SuppressWarnings("unchecked")
 	public ModelGuiBuilder(FormToolkit toolkit, EditContext editContext, EObject entity) {
@@ -131,24 +128,6 @@ public class ModelGuiBuilder<T extends EObject> {
 		} else {
 			throw new IllegalStateException("Unsupported feature: " + feature);
 		}
-	}
-	
-	private static class HasValueConverter extends Converter {
-		public HasValueConverter() {
-			super(Object.class, Boolean.class);
-		}
-
-		@Override
-		public Object convert(Object fromObject) {
-			return fromObject != null;
-		}
-	}
-	
-	@SuppressWarnings("unused")
-	private void bindEnabled(Control control, IObservableValue<?> obj) {
-		UpdateValueStrategy strat = new UpdateValueStrategy();
-		strat.setConverter(new HasValueConverter());
-		editContext.getDataBindingContext().bindValue(WidgetProperties.enabled().observe(control), obj, null, strat); 
 	}
 	
 	private Control createAndBindCheckbox(Composite container, EStructuralFeature feature) {
@@ -258,12 +237,12 @@ public class ModelGuiBuilder<T extends EObject> {
 		return combo;
 	}
 
-	public void createAndBindSelectEntityControls(final Composite container, final EStructuralFeature feature, FeaturePath namePath, final DialogCreator dialogCreator) {
-		createAndBindSelectControls(container, feature, 
-			HandleUnresolvedProperty.value(UnresolvedAction.URL, namePath) , 
-			CommandOperations.setDialog(dialogCreator));
-	}
-	
+//	public void createAndBindSelectEntityControls(final Composite container, final EStructuralFeature feature, FeaturePath namePath, final DialogCreator dialogCreator) {
+//		createAndBindSelectControls(container, feature, 
+//			HandleUnresolvedProperty.value(UnresolvedAction.URL, namePath) , 
+//			CommandOperations.setDialog(dialogCreator));
+//	}
+//	
 //	public void createAndBindDialogSelectControls(final Composite container, final EStructuralFeature feature, IValueProperty<?, String> nameProp, final DialogCreator dialogCreator) {
 //		createAndBindSelectControls(container, feature, nameProp, CommandOperations.setDialog(feature, dialogCreator));
 //	}
@@ -299,7 +278,7 @@ public class ModelGuiBuilder<T extends EObject> {
 		selectedEntityName.setEditable(false);
 		
 		if (isEditable) {
-			Button selectButton = toolkit.createButton(valueButtonContainer, selectCommand.getLabel(), SWT.NONE);
+			Button selectButton = toolkit.createButton(valueButtonContainer, selectButtonLabel, SWT.NONE);
 			selectButton.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
@@ -316,7 +295,7 @@ public class ModelGuiBuilder<T extends EObject> {
 	 */
 	public Binding bindSelectNameText(EStructuralFeature feature, IValueProperty<T, String> nameProp, Text selectedEntityName) {
 		return editContext.getDataBindingContext().bindValue(
-			WidgetProperties.text(SWT.Modify).observe(selectedEntityName),
+			WidgetProperties.text(SWT.Modify).observeDelayed(modelUpdateDelayMs, selectedEntityName),
 			nameProp.observeDetail(entity), 
 			ValidationUtil.modelVerifyingStrategy(entity, feature),
 			ValidationUtil.modelVerifyingStrategy(entity, feature));
@@ -374,6 +353,23 @@ public class ModelGuiBuilder<T extends EObject> {
 		
 		return link;
 	}
+	
+	/**
+	 * Like the {@link #createSelectControls} method, but the text field is editable. Hence the feature
+	 * must be a string.
+	 */
+	public void createTextSelectControls(Composite container, EAttribute feature, CommandOperation<T> selectCommand) {
+		createLabel(container, feature);
+		Text name = createSelectControls(container, feature, selectCommand);
+		name.setEditable(true);
+		name.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		@SuppressWarnings("unchecked")
+		IValueProperty<T, String> valueProp = EMFEditProperties.value(editContext.getEditingDomain(), feature);
+		
+		bindSelectNameText(feature, valueProp, name);
+	}
+
 		
 	public void setWidthHint(int widthHint) {
 		this.widthHint = widthHint;
@@ -385,6 +381,16 @@ public class ModelGuiBuilder<T extends EObject> {
 
 	public void setModelUpdateDelayMs(int modelUpdateDelayMs) {
 		this.modelUpdateDelayMs = modelUpdateDelayMs;
+	}
+	
+	public void setSelectButtonLabel(String selectButtonLabel) {
+		this.selectButtonLabel = selectButtonLabel;
+	}
+
+	public <NEW_T extends EObject> ModelGuiBuilder<NEW_T> childBuilder(EStructuralFeature feature) {
+		@SuppressWarnings("unchecked")
+		IObservableValue<NEW_T> newEntity = EMFProperties.value(feature).observeDetail(entity);
+		return new ModelGuiBuilder<NEW_T>(toolkit, editContext, newEntity);
 	}
 }
 	

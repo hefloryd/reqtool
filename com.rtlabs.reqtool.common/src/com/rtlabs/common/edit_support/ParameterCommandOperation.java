@@ -11,5 +11,4 @@ import org.eclipse.emf.ecore.EStructuralFeature;
  */
 public interface ParameterCommandOperation<T extends EObject> {
 	void run(EditContext editContext, IObservableValue<T> containingEntity, EStructuralFeature containingFeature, List<?> selection);
-	String getLabel();
 }
