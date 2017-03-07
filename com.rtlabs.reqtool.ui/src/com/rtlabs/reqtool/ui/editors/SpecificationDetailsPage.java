@@ -5,11 +5,19 @@ import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals
 import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION__DOCUMENT_SUFFIX_FILE;
 import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION__TITLE;
 
+import java.util.Optional;
+
 import org.eclipse.core.databinding.observable.value.IObservableValue;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.EditingDomain;
 import org.eclipse.emf.edit.domain.IEditingDomainProvider;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.forms.IManagedForm;
@@ -19,8 +27,10 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 
+import com.rtlabs.common.edit_support.CommandOperation;
 import com.rtlabs.common.edit_support.EditContext;
 import com.rtlabs.common.model_gui_builder.ModelGuiBuilder;
+import com.rtlabs.common.util.MessageManagerSupport;
 import com.rtlabs.reqtool.model.requirements.Specification;
 import com.rtlabs.reqtool.ui.Activator;
 
@@ -47,11 +57,17 @@ class SpecificationDetailsPage extends FormPage implements IEditingDomainProvide
 	protected void createFormContent(IManagedForm managedForm) {
 		FormToolkit toolkit = managedForm.getToolkit();
 		ScrolledForm form = managedForm.getForm();
+		
+		MessageManagerSupport.create(form.getForm(), editContext.getDataBindingContext());
+		
 		Composite body = form.getBody();
 		toolkit.paintBordersFor(body);
 		ColumnLayout layout = new ColumnLayout();
 		layout.maxNumColumns = 2;
 		body.setLayout(layout);
+		
+		
+		
 		
 		Section section = toolkit.createSection(body, Section.TITLE_BAR);
 		section.setText("Specification Details");
@@ -66,9 +82,37 @@ class SpecificationDetailsPage extends FormPage implements IEditingDomainProvide
 		
 		guiBuilder.createFeatureControl(container, SPECIFICATION__TITLE);
 		guiBuilder.createFeatureControl(container, SPECIFICATION__DESCRIPTION);
-		guiBuilder.createFeatureControl(container, SPECIFICATION__DOCUMENT_PREFIX_FILE);
-		guiBuilder.createFeatureControl(container, SPECIFICATION__DOCUMENT_SUFFIX_FILE);
+//		guiBuilder.createFeatureControl(container, SPECIFICATION__DOCUMENT_PREFIX_FILE);
+//		guiBuilder.createFeatureControl(container, SPECIFICATION__DOCUMENT_SUFFIX_FILE);
+		
+		
+		guiBuilder.createTextSelectControls(container, SPECIFICATION__DOCUMENT_PREFIX_FILE, 
+			fileSelectionDialog(container.getShell(), "Select Prefix file"));
+		guiBuilder.createTextSelectControls(container, SPECIFICATION__DOCUMENT_SUFFIX_FILE, 
+			fileSelectionDialog(container.getShell(), "Select Suffix file"));
+
+		editContext.getDataBindingContext().updateTargets();
 	}
+	
+	public static <T extends EObject, F> CommandOperation<T> fileSelectionDialog(Shell shell, String title) {
+		return (EditContext editContext, IObservableValue<T> containingEntity, EStructuralFeature containingFeature) -> {
+
+			FileDialog dialog = new FileDialog(shell, SWT.OPEN);
+			dialog.setText(title);
+			
+			Optional.ofNullable(containingEntity.getValue())
+				.map(o -> o.eGet(containingFeature))
+				.ifPresent(v -> dialog.setFilterPath((String) v));
+
+			String result = dialog.open();
+			if (result != null) { 
+				editContext.getEditingDomain().getCommandStack().execute(
+					SetCommand.create(editContext.getEditingDomain(), 
+						containingEntity.getValue(), containingFeature, result));
+			}
+		};
+	}
+
 
 	@Override
 	public EditingDomain getEditingDomain() {

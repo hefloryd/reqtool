@@ -113,7 +113,6 @@ public class SpecificationEditor extends FormEditor implements EditContext {
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
 		super.init(site, input);
 		setPartName(input.getName());
-		
 		createModel();
 	}
 
@@ -137,7 +136,7 @@ public class SpecificationEditor extends FormEditor implements EditContext {
 	protected void addPages() {
 		try {
 			// Use this method instead of addPage(IFormPage) to get proper initialisation  
-			addPage(new RequirementsTablePage(this, getSpecification()), getEditorInput());
+			addPage(new RequirementTablePage(this, getSpecification()), getEditorInput());
 			addPage(new SpecificationDetailsPage(this, getSpecification()), getEditorInput());
 		} catch (PartInitException e) {
 			throw new RuntimeException(e);

@@ -2,7 +2,16 @@
 package com.rtlabs.reqtool.model.requirements
 
 import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.common.util.DiagnosticChain
+import org.eclipse.emf.common.util.BasicDiagnostic
+import java.util.Map
+
+type DiagnosticChain wraps DiagnosticChain
+type Map wraps Map<?,?>
+type BasicDiagnostic wraps BasicDiagnostic
+
 type LocalDate wraps java.time.LocalDate
+
 
 enum Priority {
 	LOWEST
@@ -113,4 +122,8 @@ class Specification {
 
 	int nextIdentifier
 	op Requirement createNewRequirement()
+	
+    op boolean validateObject(DiagnosticChain chain, Map context) {
+        return com.rtlabs.reqtool.model.requirements.SpecificationValidation.validate(this, chain, context)
+    }
 }
