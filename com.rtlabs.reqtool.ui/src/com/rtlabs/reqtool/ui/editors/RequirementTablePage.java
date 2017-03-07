@@ -23,12 +23,12 @@ import com.rtlabs.reqtool.ui.editors.support.RequirementTableBuilder;
 /**
  * Displays and edits a list of requirements.
  */
-class RequirementsTablePage extends FormPage implements IEditingDomainProvider {
+class RequirementTablePage extends FormPage implements IEditingDomainProvider {
 	private EditContext editContext;
 	private IObservableValue<Specification> specification;
 
 
-	public RequirementsTablePage(SpecificationEditor editor, IObservableValue<Specification> specification) {
+	public RequirementTablePage(SpecificationEditor editor, IObservableValue<Specification> specification) {
 		super(editor, Activator.PLUGIN_ID, "Requirements");
 		this.editContext = editor;
 		this.specification = specification;
