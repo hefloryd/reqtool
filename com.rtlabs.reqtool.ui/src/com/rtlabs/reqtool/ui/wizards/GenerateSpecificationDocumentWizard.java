@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.eclipse.core.databinding.AggregateValidationStatus;
+import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.IValueChangeListener;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.resources.IContainer;
@@ -33,12 +34,13 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.emf.common.util.DiagnosticChain;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.databinding.edit.EMFEditProperties;
-import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.XMLResource;
+import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ISelection;
@@ -50,7 +52,6 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
@@ -69,7 +70,6 @@ import org.eclipse.ui.statushandlers.StatusManager;
 import com.rtlabs.common.databinding.DiagnosticReporter;
 import com.rtlabs.common.dialogs.FilteredElementTreeSelectionDialog;
 import com.rtlabs.common.edit_support.CommandOperation;
-import com.rtlabs.common.edit_support.CommandOperations;
 import com.rtlabs.common.edit_support.EditContext;
 import com.rtlabs.common.edit_support.SimpleEditContext;
 import com.rtlabs.common.model_gui_builder.ModelGuiBuilder;
@@ -99,8 +99,6 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 	 */
 	public static final String FILE_EXTENSION = "spec";
 	
-	public static String NL = System.getProperty("line.separator");
-
 	/**
 	 * This is the file creation page.
 	 */
@@ -300,8 +298,8 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 			container.setLayout(GridLayoutFactory.swtDefaults().numColumns(2).spacing(15, 5).create());
 			toolkit.paintBordersFor(container);
 
-			createFileChooserControls(container, guiBuilder, chooseSourceDialog(container.getShell()), EXPORT_DOCUMENT_VIEW_MODEL__SOURCE_SPECIFICATION_FILE);
-			createFileChooserControls(container, guiBuilder, chooseTargetDialog(container.getShell()), EXPORT_DOCUMENT_VIEW_MODEL__OUTPUT_FILE);
+			guiBuilder.createTextSelectControls(container, EXPORT_DOCUMENT_VIEW_MODEL__SOURCE_SPECIFICATION_FILE, selectSourceDialog(container.getShell()));
+			guiBuilder.createTextSelectControls(container, EXPORT_DOCUMENT_VIEW_MODEL__OUTPUT_FILE, selectTargetDialog(container.getShell()));
 
 			guiBuilder.createFeatureControl(container, EXPORT_DOCUMENT_VIEW_MODEL__EXPORT_ONLY_SELECTED_REQUIREMENTS);
 			
@@ -325,24 +323,8 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 			};
 		}
 
-		@SuppressWarnings("unchecked")
-		private void createFileChooserControls(Composite container, 
-			ModelGuiBuilder<ExportDocumentViewModel> guiBuilder,
-			CommandOperation<ExportDocumentViewModel> selectCommand,
-			EAttribute feature) {
-			
-			guiBuilder.createLabel(container, feature);
-			Text name = guiBuilder.createSelectControls(container, feature, selectCommand);
-			name.setEditable(true);
-			name.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-			
-			guiBuilder.bindSelectNameText(feature, EMFEditProperties.value(editContext.getEditingDomain(), feature), name);
-			
-		}
-
-
-		private CommandOperation<ExportDocumentViewModel> chooseSourceDialog(Shell shell) {
-			return CommandOperations.setDialog(() -> {
+		private <T extends EObject> CommandOperation<T> selectSourceDialog(Shell shell) {
+			return (EditContext editCxt, IObservableValue<T> containingEntity, EStructuralFeature containingFeature) -> {
 				FilteredElementTreeSelectionDialog dialog = new FilteredElementTreeSelectionDialog(
 					shell, new WorkbenchLabelProvider(), new WorkbenchContentProvider());
 				
@@ -361,47 +343,45 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 				dialog.setValidator(s -> Arrays.stream(s).allMatch(f -> f instanceof IFile)
 					? new Status(IStatus.OK, "*", "") : ValidationStatus.error("A specification file must be selected."));
 				
-				return dialog.open() == Window.OK 
-					? Optional.ofNullable((IFile) dialog.getFirstResult()).map(f -> f.getFullPath().toString())
-					: Optional.empty();
-			});
+				if (dialog.open() == Window.OK) { 
+					editContext.getEditingDomain().getCommandStack().execute(
+						SetCommand.create(editContext.getEditingDomain(), 
+							containingEntity.getValue(), containingFeature, dialog.getFirstResult()));
+				}
+			};
 		}
 
-		private CommandOperation<ExportDocumentViewModel> chooseTargetDialog(Shell shell) {
-			return CommandOperations.setDialog(() -> {
+		private CommandOperation<ExportDocumentViewModel> selectTargetDialog(Shell shell) {
+			return (EditContext editCxt, IObservableValue<ExportDocumentViewModel> containingEntity, EStructuralFeature containingFeature) -> {
+
 				FileDialog dialog = new FileDialog(shell, SWT.SAVE);
-				dialog.setFilterExtensions(new String[] { "*." + FILE_EXTENSION });
 				dialog.setOverwrite(true);
 				// Set output path text as default
 				dialog.setFilterPath(viewModel.getOutputFile());
 
-				return Optional.ofNullable(dialog.open());
-			});
+				String result = dialog.open();
+				if (result != null) { 
+					editContext.getEditingDomain().getCommandStack().execute(
+						SetCommand.create(editContext.getEditingDomain(), 
+							containingEntity.getValue(), containingFeature, result));
+				}
+			};
 		}
 	}
 	
-	public static <T> ViewerFilter typedPredicateFilter(
+	private static <T> ViewerFilter typedPredicateFilter(
 		Class<T> filterClass, 
-		boolean resultForOtherClasses, 
+		boolean includeOtherClasses, 
 		Predicate<? super T> fileterPredicate)
 	{
 		return new ViewerFilter() {
 			@Override
 			public boolean select(Viewer viewer, Object parentElement, Object element) {
-				return filterClass.isInstance(element) ? fileterPredicate.test(filterClass.cast(element)) : resultForOtherClasses;
+				return filterClass.isInstance(element) ? fileterPredicate.test(filterClass.cast(element)) : includeOtherClasses;
 			}
 		};
 	}
 
-	public static <T> ViewerFilter predicateFilter(Predicate<Object> p) {
-		return new ViewerFilter() {
-			@Override
-			public boolean select(Viewer viewer, Object parentElement, Object element) {
-				return p.test(element);
-			}
-		};
-	}
-	
 	public static boolean validateObject(ExportDocumentViewModel model, DiagnosticChain chain, Map<?, ?> context) {
 		boolean result = true;
 		DiagnosticReporter reporter = new DiagnosticReporter(chain, context, null, model, "*", -1);
@@ -428,12 +408,12 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 		}
 		
 		if (file.getType() != IResource.FILE) {
-			reporter.error("The target path is not a file.");
+			reporter.error("The source path is not a file.");
 			return false;
 		}
 		
 		if (!FILE_EXTENSION.equals(file.getFileExtension())) {
-			reporter.error("The target file must have extension " + FILE_EXTENSION + ".");
+			reporter.error("The source file must have extension " + FILE_EXTENSION + ".");
 			return false;
 		}
 		
@@ -475,7 +455,7 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 		Result<Path> outPath = checkedToPath(model.getOutputFile());
 		
 		if (!outPath.isAllOk() || !outPath.getResult().isAbsolute()) {
-			reporter.error("The output file  path is invalid: " + outPath.getMessage());
+			reporter.error("The output file path is invalid: " + outPath.getMessage());
 			return false;
 		}
 
