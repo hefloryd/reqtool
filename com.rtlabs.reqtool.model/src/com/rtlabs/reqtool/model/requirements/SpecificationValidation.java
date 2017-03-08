@@ -32,8 +32,7 @@ public class SpecificationValidation {
 		String pathText = (String) spec.eGet(feature);
 		
 		if (Strings.isNullOrEmpty(pathText)) {
-			reporter.error("This field must not be empty.");
-			return false;
+			return true;
 		}
 		
 		Path path;
