@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+    Update versions command:
+    mvn org.eclipse.tycho:tycho-versions-plugin:set-version -DnewVersion=1.1.0-SNAPSHOT -Dtycho.mode=maven
+-->
+
+<project
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+    xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <groupId>com.rtlabs.reqtool</groupId>
+  <artifactId>com.rtlabs.reqtool.releng</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>../com.rtlabs.reqtool.common</module>
+    <module>../com.rtlabs.reqtool.model</module>
+    <module>../com.rtlabs.reqtool.model.edit</module>
+    <module>../com.rtlabs.reqtool.ui</module>
+    
+    <module>../com.rtlabs.reqtool.feature</module>
+    <module>../com.rtlabs.reqtool.releng.target</module>
+    <module>../com.rtlabs.reqtool.releng.p2update</module>
+    
+    <module>../com.rtlabs.reqtool.ui.tests</module>
+  </modules>
+
+  <properties>
+    <!-- Skip deployment for all modules that don't have anything else configured. -->
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <tycho-version>0.26.0</tycho-version>
+  </properties>
+
+  <profiles>
+  </profiles>
+    <build>
+    <plugins>
+
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-maven-plugin</artifactId>
+        <version>${tycho-version}</version>
+        <extensions>true</extensions>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>target-platform-configuration</artifactId>
+        <version>${tycho-version}</version>
+        <configuration>
+          <target>
+            <artifact>
+              <groupId>com.rtlabs.reqtool</groupId>
+              <artifactId>com.rtlabs.reqtool.releng.target</artifactId>
+              <!-- Target should have the same version as the releng module. -->
+              <version>${project.version}</version>
+            </artifact>
+          </target>
+          <environments>
+            <environment>
+              <os>win32</os>
+              <ws>win32</ws>
+              <arch>x86</arch>
+            </environment>
+            <environment>
+              <os>win32</os>
+              <ws>win32</ws>
+              <arch>x86_64</arch>
+            </environment>
+            <environment>
+              <os>linux</os>
+              <ws>gtk</ws>
+              <arch>x86</arch>
+            </environment>
+            <environment>
+              <os>linux</os>
+              <ws>gtk</ws>
+              <arch>x86_64</arch>
+            </environment>
+            <environment>
+              <os>macosx</os>
+              <ws>cocoa</ws>
+              <arch>x86_64</arch>
+            </environment>
+          </environments>
+        </configuration>
+      </plugin>
+      
+    </plugins>
+  </build>
+</project>

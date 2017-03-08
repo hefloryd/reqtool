@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Reqtool UI tests
 Bundle-SymbolicName: com.rtlabs.reqtool.ui.tests
-Bundle-Version: 1.0.0.qualifier
-Bundle-Vendor: rt-labs.com
+Bundle-Version: 0.1.0.qualifier
+Bundle-Vendor: rt-labs
 Fragment-Host: com.rtlabs.reqtool.ui
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.junit
