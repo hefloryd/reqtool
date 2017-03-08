@@ -36,7 +36,7 @@ public class TraceNodeContentProviderTest {
 		Requirement entity = requirements.get(6);
 		Object[] elements = provider.getElements(entity);
 		// Should return all reachable elements including itself
-		assertEquals(17, elements.length);
+		assertEquals(4, elements.length);
 	}
 
 	@Test
