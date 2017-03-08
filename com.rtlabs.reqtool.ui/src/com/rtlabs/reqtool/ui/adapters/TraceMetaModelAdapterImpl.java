@@ -4,8 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.capra.core.adapters.ArtifactMetaModelAdapter;
 import org.eclipse.capra.core.adapters.Connection;
 import org.eclipse.capra.core.adapters.TraceMetaModelAdapter;
+import org.eclipse.capra.core.handlers.IAnnotateArtifact;
+import org.eclipse.capra.core.handlers.IArtifactHandler;
+import org.eclipse.capra.core.helpers.ExtensionPointHelper;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
@@ -14,6 +18,7 @@ import org.eclipse.emf.edit.command.RemoveCommand;
 import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
 import org.eclipse.emf.edit.domain.EditingDomain;
 
+import com.rtlabs.reqtool.model.requirements.Artifact;
 import com.rtlabs.reqtool.model.requirements.RequirementsPackage;
 import com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals;
 import com.rtlabs.reqtool.model.requirements.Traceable;

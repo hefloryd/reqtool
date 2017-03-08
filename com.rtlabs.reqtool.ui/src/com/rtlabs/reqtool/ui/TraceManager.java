@@ -27,7 +27,7 @@ public class TraceManager {
 		
 		TraceHelper traceHelper = new TraceHelper(traceModel);
 		ArtifactHelper artifactHelper = new ArtifactHelper(artifactModel);
-	
+
 		if (data instanceof StructuredSelection) {
 			StructuredSelection selection = (StructuredSelection) data;
 			List<?> selectionList = selection.toList();
@@ -46,5 +46,4 @@ public class TraceManager {
 			
 		}
 	}
-	
 }
