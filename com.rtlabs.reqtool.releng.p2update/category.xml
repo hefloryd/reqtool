@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/com.rtlabs.reqtool.feature_0.1.0.qualifier.jar" id="com.rtlabs.reqtool.feature" version="0.1.0.qualifier">
+      <category name="com.rtlabs.reqtool"/>
+   </feature>
+   <category-def name="com.rtlabs.reqtool" label="ReqTool"/>
+</site>
