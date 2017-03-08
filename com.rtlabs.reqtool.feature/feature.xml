@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.rtlabs.reqtool.feature"
+      label="ReqTool"
+      version="0.1.0.qualifier"
+      provider-name="rt-labs">
+
+   <description url="http://www.rt-labs.com">
+      ReqTool
+   </description>
+
+   <copyright>
+      Copyright (c) 2017 rt-labs AB
+   </copyright>
+
+   <license url="">
+      License...
+   </license>
+
+   <requires>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.emf.ecore"/>
+      <import plugin="org.eclipse.xtext.xbase.lib"/>
+      <import plugin="org.eclipse.emf.ecore.xcore.lib"/>
+      <import plugin="org.eclipse.emf.edit"/>
+      <import plugin="org.eclipse.core.databinding"/>
+      <import plugin="org.eclipse.jface"/>
+      <import plugin="org.eclipse.jface.databinding"/>
+      <import plugin="org.eclipse.emf"/>
+      <import plugin="org.eclipse.emf.databinding"/>
+      <import plugin="org.eclipse.core.databinding.property"/>
+      <import plugin="org.eclipse.emf.databinding.edit"/>
+      <import plugin="org.eclipse.ui.forms"/>
+      <import plugin="com.google.guava"/>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.emf.ecore.xcore"/>
+      <import plugin="org.eclipse.capra.core" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.ui.editors"/>
+      <import plugin="org.eclipse.nebula.widgets.nattable.core"/>
+      <import plugin="org.eclipse.emf.edit.ui"/>
+      <import plugin="org.eclipse.zest.core"/>
+      <import plugin="org.eclipse.zest.layouts"/>
+      <import plugin="org.eclipse.emf.ecore.xmi"/>
+      <import plugin="org.apache.commons.lang"/>
+      <import plugin="org.eclipse.nebula.widgets.nattable.extension.nebula"/>
+      <import plugin="org.eclipse.nebula.widgets.richtext"/>
+   </requires>
+
+   <plugin
+         id="com.rtlabs.reqtool.common"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.rtlabs.reqtool.model"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.rtlabs.reqtool.model.edit"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.rtlabs.reqtool.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>
