@@ -103,14 +103,14 @@
    </extension>
    
    <extension
-         point="org.eclipse.capra.configuration.TraceabilityMetaModel">
+         point="org.eclipse.capra.configuration.traceabilityMetaModel">
       <TraceabilityMetaModelAdapter
             class="com.rtlabs.reqtool.ui.adapters.TraceMetaModelAdapterImpl">
       </TraceabilityMetaModelAdapter>
    </extension>
    
    <extension
-         point="org.eclipse.capra.configuration.ArtifactMetaModel">
+         point="org.eclipse.capra.configuration.artifactMetaModel">
       <ArtifactMetaModelAdapter
             class="com.rtlabs.reqtool.ui.adapters.ArtifactMetaModelAdapterImpl">
       </ArtifactMetaModelAdapter>

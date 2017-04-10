@@ -3,7 +3,7 @@ package com.rtlabs.reqtool.ui.views;
 import org.eclipse.capra.core.adapters.ArtifactMetaModelAdapter;
 import org.eclipse.capra.core.adapters.TraceMetaModelAdapter;
 import org.eclipse.capra.core.adapters.TracePersistenceAdapter;
-import org.eclipse.capra.core.handlers.ArtifactHandler;
+import org.eclipse.capra.core.handlers.IArtifactHandler;
 import org.eclipse.capra.core.helpers.ExtensionPointHelper;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.action.Action;
@@ -181,8 +181,8 @@ public class TraceView extends ViewPart implements IZoomableWorkbenchPart, IShow
 			Object o = selection.getFirstElement();
 			if (o instanceof Artifact) {
 				Artifact artifact = (Artifact) o;
-				ArtifactHandler handler = artifactAdapter.getArtifactHandlerInstance(artifact);
-				Object handle = handler.resolveArtifact(artifact);
+				IArtifactHandler<Object> handler = artifactAdapter.getArtifactHandlerInstance(artifact);
+				Object handle = handler.resolveWrapper(artifact);
 				return new ShowInContext(viewer.getInput(), new StructuredSelection(handle));
 			}
 		}
