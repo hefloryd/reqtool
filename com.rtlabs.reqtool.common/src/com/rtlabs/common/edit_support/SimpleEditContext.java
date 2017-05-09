@@ -12,6 +12,9 @@ import org.eclipse.emf.edit.provider.ComposedAdapterFactory;
 import org.eclipse.emf.edit.provider.ReflectiveItemProviderAdapterFactory;
 import org.eclipse.emf.edit.provider.resource.ResourceItemProviderAdapterFactory;
 
+/**
+ * A simple {@link EditContext} which takes its components as arguments to its constructor.
+ */
 public class SimpleEditContext implements EditContext {
 	private final DataBindingContext dataBindingContext;
 	private final AdapterFactory adapterFactory;

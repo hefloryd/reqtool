@@ -115,15 +115,15 @@ class Specification {
 	contains Requirement[] requirements opposite specification
 	contains ArtifactContainer artifactContainer
 	
-    @GenModel(propertyDescription="-")
+	@GenModel(propertyDescription="-")
 	String documentPrefixFile = ""
-    @GenModel(propertyDescription="-")
+	@GenModel(propertyDescription="-")
 	String documentSuffixFile = ""
 
 	int nextIdentifier
 	op Requirement createNewRequirement()
 	
-    op boolean validateObject(DiagnosticChain chain, Map context) {
-        return com.rtlabs.reqtool.model.requirements.SpecificationValidation.validate(this, chain, context)
-    }
+	op boolean validateObject(DiagnosticChain chain, Map context) {
+		return com.rtlabs.reqtool.model.requirements.SpecificationValidation.validate(this, chain, context)
+	}
 }

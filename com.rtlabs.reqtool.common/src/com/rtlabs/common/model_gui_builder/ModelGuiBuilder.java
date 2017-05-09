@@ -2,6 +2,7 @@ package com.rtlabs.common.model_gui_builder;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.UpdateValueStrategy;
@@ -79,8 +80,9 @@ public class ModelGuiBuilder<T extends EObject> {
 		
 		EClass entityClass = (EClass) ModelGuiBuilderSupport.getType(entity);
 		
-		itemPropertySource = editContext.getItemPropertySource(
-				entityClass.getEPackage().getEFactoryInstance().create(entityClass));
+		itemPropertySource = Objects.requireNonNull(editContext.getItemPropertySource(
+				entityClass.getEPackage().getEFactoryInstance().create(entityClass)),
+			"An IItemPropertySource could not be created for " + entityClass);
 	}
 	
 	/**

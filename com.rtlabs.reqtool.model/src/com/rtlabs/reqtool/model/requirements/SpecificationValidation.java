@@ -16,6 +16,10 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 
 import com.google.common.base.Strings;
 
+/**
+ * Contains methods for validating if a {@link Specification} object has legal values. Called from validate
+ * methods in the Xcore model.
+ */
 public class SpecificationValidation {
 
 	public static boolean validate(Specification spec, DiagnosticChain chain, Map<?, ?> context) {
