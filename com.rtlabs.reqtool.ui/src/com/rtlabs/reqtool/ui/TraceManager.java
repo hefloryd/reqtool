@@ -16,7 +16,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 
 import com.rtlabs.reqtool.model.requirements.Requirement;
 
-class TraceManager {
+public class TraceManager {
 
 	public void createTrace(Requirement requirement, Object data) {
 		

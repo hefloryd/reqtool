@@ -85,9 +85,9 @@ class Requirement extends Traceable {
 
 
 enum RequirementType {
-	FREE_STYLE as "Free Style",
-	GHERKIN as "Gherkin",
-	USER_STORY as "User Story"
+	FREE_STYLE,
+	GHERKIN,
+	USER_STORY
 }
 
 class Artifact extends Traceable {
@@ -115,9 +115,7 @@ class Specification {
 	contains Requirement[] requirements opposite specification
 	contains ArtifactContainer artifactContainer
 	
-	@GenModel(propertyDescription="-")
 	String documentPrefixFile = ""
-	@GenModel(propertyDescription="-")
 	String documentSuffixFile = ""
 
 	int nextIdentifier
