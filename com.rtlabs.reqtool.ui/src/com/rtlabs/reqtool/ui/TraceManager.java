@@ -1,5 +1,6 @@
 package com.rtlabs.reqtool.ui;
 
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -15,7 +16,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 
 import com.rtlabs.reqtool.model.requirements.Requirement;
 
-public class TraceManager {
+class TraceManager {
 
 	public void createTrace(Requirement requirement, Object data) {
 		
@@ -43,7 +44,6 @@ public class TraceManager {
 				traceHelper.annotateTrace(wrappers);
 				persistenceAdapter.saveTracesAndArtifacts(traceModel, artifactModel);				
 			});
-			
 		}
 	}
 }

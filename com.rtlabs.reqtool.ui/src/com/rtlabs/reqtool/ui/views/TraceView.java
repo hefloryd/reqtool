@@ -181,7 +181,7 @@ public class TraceView extends ViewPart implements IZoomableWorkbenchPart, IShow
 			Object o = selection.getFirstElement();
 			if (o instanceof Artifact) {
 				Artifact artifact = (Artifact) o;
-				IArtifactHandler<Object> handler = artifactAdapter.getArtifactHandlerInstance(artifact);
+				IArtifactHandler<?> handler = artifactAdapter.getArtifactHandlerInstance(artifact);
 				Object handle = handler.resolveWrapper(artifact);
 				return new ShowInContext(viewer.getInput(), new StructuredSelection(handle));
 			}
