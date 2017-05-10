@@ -7,6 +7,7 @@ import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.conversion.Converter;
 import org.eclipse.core.databinding.conversion.IConverter;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
+import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -19,7 +20,8 @@ import com.google.common.primitives.Primitives;
  * Common code for validation.
  */
 public class ValidationUtil {
-	
+	public static final String SHORT_MESSAGE_KEY = "com.rtlabs.common.databinding.short_diagnostic_messages_flag";
+
 	/**
 	 * Check recursively if children of diagnostic contains soughtFeature. Returns the first such child.
 	 */
@@ -51,23 +53,23 @@ public class ValidationUtil {
 	 * 		which is relevant for the validated binding.
 	 * @param featureToValidate The feature to validate
 	 */
-	public static UpdateValueStrategy modelVerifyingStrategy(IObservableValue<? extends EObject> entity, EStructuralFeature featureToValidate) {
+	public static UpdateValueStrategy modelVerifyingStrategy(IObservableValue<? extends EObject> entity, EStructuralFeature featureToValidate, AdapterFactory adapterFactory) {
 		AfterSetValidationUpdateValueStrategy strat = new AfterSetValidationUpdateValueStrategy();
-		strat.setAfterSetValidator(new DatabindingToEmfValidator<>(entity, featureToValidate));
+		strat.setAfterSetValidator(new DatabindingToEmfValidator<>(entity, featureToValidate, adapterFactory));
 		return strat;
 	}
 
 	/**
 	 * Values that are stored as non-strings and edited as strings need this converter;
 	 */
-	public static UpdateValueStrategy objectToStringStrategy(IObservableValue<? extends EObject> entity, EStructuralFeature featureToValidate) {
-		UpdateValueStrategy s = modelVerifyingStrategy(entity, featureToValidate);
+	public static UpdateValueStrategy objectToStringStrategy(IObservableValue<? extends EObject> entity, EStructuralFeature featureToValidate, AdapterFactory adapterFactory) {
+		UpdateValueStrategy s = modelVerifyingStrategy(entity, featureToValidate, adapterFactory);
 		s.setConverter(new ObjectToStringConverter());
 		return s;
 	}
 
-	public static UpdateValueStrategy stringStrategy(IObservableValue<? extends EObject> entity, EStructuralFeature featureToValidate) {
-		UpdateValueStrategy s = modelVerifyingStrategy(entity, featureToValidate);
+	public static UpdateValueStrategy stringStrategy(IObservableValue<? extends EObject> entity, EStructuralFeature featureToValidate, AdapterFactory adapterFactory) {
+		UpdateValueStrategy s = modelVerifyingStrategy(entity, featureToValidate, adapterFactory);
 		s.setConverter(new IdentityConverter(String.class, String.class));
 		return s;
 	}

@@ -7,6 +7,8 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.emf.common.util.Enumerator;
+import org.eclipse.emf.common.util.ResourceLocator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 
@@ -69,4 +71,10 @@ public class RtUtil {
 		
 		folder.create(true, false, null);
 	}
+	
+	public static String getEnumLiteralString(ResourceLocator resourceLocator, Enumerator e) {
+		return resourceLocator.getString(
+		"_UI_" + e.getClass().getSimpleName() + "_" +  e.getName() + "_literal");
+	}
+
 }

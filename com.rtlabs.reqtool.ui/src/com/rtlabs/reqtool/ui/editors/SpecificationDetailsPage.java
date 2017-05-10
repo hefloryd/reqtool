@@ -1,5 +1,6 @@
 package com.rtlabs.reqtool.ui.editors;
 
+import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION;
 import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION__DESCRIPTION;
 import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION__DOCUMENT_PREFIX_FILE;
 import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION__DOCUMENT_SUFFIX_FILE;
@@ -78,17 +79,17 @@ class SpecificationDetailsPage extends FormPage implements IEditingDomainProvide
 		container.setLayout(GridLayoutFactory.swtDefaults().numColumns(2).spacing(15, 15).create());
 		toolkit.paintBordersFor(container);
 		
-		ModelGuiBuilder<Specification> guiBuilder = new ModelGuiBuilder<>(toolkit, editContext, specification);
+		ModelGuiBuilder guiBuilder = new ModelGuiBuilder(toolkit, editContext, container, SPECIFICATION, specification);
 		
-		guiBuilder.createFeatureControl(container, SPECIFICATION__TITLE);
-		guiBuilder.createFeatureControl(container, SPECIFICATION__DESCRIPTION);
+		guiBuilder.createFeatureControl(SPECIFICATION__TITLE);
+		guiBuilder.createFeatureControl(SPECIFICATION__DESCRIPTION);
 //		guiBuilder.createFeatureControl(container, SPECIFICATION__DOCUMENT_PREFIX_FILE);
 //		guiBuilder.createFeatureControl(container, SPECIFICATION__DOCUMENT_SUFFIX_FILE);
 		
 		
-		guiBuilder.createTextSelectControls(container, SPECIFICATION__DOCUMENT_PREFIX_FILE, 
+		guiBuilder.createTextSelectControls(SPECIFICATION__DOCUMENT_PREFIX_FILE, 
 			fileSelectionDialog(container.getShell(), "Select Prefix file"));
-		guiBuilder.createTextSelectControls(container, SPECIFICATION__DOCUMENT_SUFFIX_FILE, 
+		guiBuilder.createTextSelectControls(SPECIFICATION__DOCUMENT_SUFFIX_FILE, 
 			fileSelectionDialog(container.getShell(), "Select Suffix file"));
 
 		editContext.getDataBindingContext().updateTargets();

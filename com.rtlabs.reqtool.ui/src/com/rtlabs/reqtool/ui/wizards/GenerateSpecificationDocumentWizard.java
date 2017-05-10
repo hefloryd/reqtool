@@ -67,12 +67,12 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.part.ISetSelectionTarget;
 import org.eclipse.ui.statushandlers.StatusManager;
 
-import com.rtlabs.common.databinding.DiagnosticReporter;
 import com.rtlabs.common.dialogs.FilteredElementTreeSelectionDialog;
 import com.rtlabs.common.edit_support.CommandOperation;
 import com.rtlabs.common.edit_support.EditContext;
 import com.rtlabs.common.edit_support.SimpleEditContext;
 import com.rtlabs.common.model_gui_builder.ModelGuiBuilder;
+import com.rtlabs.reqtool.model.requirements.DiagnosticReporter;
 import com.rtlabs.reqtool.model.requirements.Requirement;
 import com.rtlabs.reqtool.model.requirements.Specification;
 import com.rtlabs.reqtool.ui.Activator;
@@ -292,16 +292,16 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 		public void createControl(Composite parent) {
 			FormToolkit toolkit = createDialogsFormsToolkit(parent.getShell());
 			
-			ModelGuiBuilder<ExportDocumentViewModel> guiBuilder = new ModelGuiBuilder<>(toolkit, editContext, viewModel);
-			
 			Composite container = new Composite(parent, SWT.NONE);
 			container.setLayout(GridLayoutFactory.swtDefaults().numColumns(2).spacing(15, 5).create());
 			toolkit.paintBordersFor(container);
 
-			guiBuilder.createTextSelectControls(container, EXPORT_DOCUMENT_VIEW_MODEL__SOURCE_SPECIFICATION_FILE, selectSourceDialog(container.getShell()));
-			guiBuilder.createTextSelectControls(container, EXPORT_DOCUMENT_VIEW_MODEL__OUTPUT_FILE, selectTargetDialog(container.getShell()));
+			ModelGuiBuilder guiBuilder = new ModelGuiBuilder(toolkit, editContext, container, viewModel);
 
-			guiBuilder.createFeatureControl(container, EXPORT_DOCUMENT_VIEW_MODEL__EXPORT_ONLY_SELECTED_REQUIREMENTS);
+			guiBuilder.createTextSelectControls(EXPORT_DOCUMENT_VIEW_MODEL__SOURCE_SPECIFICATION_FILE, selectSourceDialog(container.getShell()));
+			guiBuilder.createTextSelectControls(EXPORT_DOCUMENT_VIEW_MODEL__OUTPUT_FILE, selectTargetDialog(container.getShell()));
+
+			guiBuilder.createFeatureControl(EXPORT_DOCUMENT_VIEW_MODEL__EXPORT_ONLY_SELECTED_REQUIREMENTS);
 			
 			aggregateValidationStatus.addValueChangeListener(validationStatusListener());
 

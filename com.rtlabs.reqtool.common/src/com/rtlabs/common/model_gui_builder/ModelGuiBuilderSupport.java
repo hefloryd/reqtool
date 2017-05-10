@@ -11,6 +11,8 @@ import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.emf.common.util.Enumerator;
+import org.eclipse.emf.common.util.ResourceLocator;
 import org.eclipse.emf.databinding.FeaturePath;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EObject;
@@ -199,4 +201,10 @@ class ModelGuiBuilderSupport {
 			return null;
 		}
 	}
+	
+	public static String getEnumLiteralString(ResourceLocator resourceLocator, Enumerator e) {
+		return resourceLocator.getString(
+		"_UI_" + e.getClass().getSimpleName() + "_" +  e.getName() + "_literal");
+	}
+
 }

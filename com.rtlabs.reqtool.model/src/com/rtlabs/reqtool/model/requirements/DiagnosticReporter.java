@@ -1,8 +1,10 @@
 package com.rtlabs.reqtool.model.requirements;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.emf.common.util.BasicDiagnostic;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.common.util.DiagnosticChain;
@@ -10,10 +12,13 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.EValidator.SubstitutionLabelProvider;
 
+import com.rtlabs.common.databinding.ValidationUtil;
+
 /**
  * Utility class that helps with reporting issues to a diagnosticChain.
  */
 public class DiagnosticReporter {
+	
 	private EStructuralFeature feature;
 	private final EObject object;
 	private final String diagnosticSource;
@@ -21,28 +26,56 @@ public class DiagnosticReporter {
 	private final DiagnosticChain diagnosticChain;
 	private final Map<?, ?> context;
 	
-	public DiagnosticReporter(DiagnosticChain chain, Map<?, ?> context, EStructuralFeature feature, EObject object, String diagnosticSource,
-			int diagnosticCode) {
-		super();
-		this.diagnosticChain = chain;
+	private List<EStructuralFeature> affectedFeatures = new ArrayList<>();
+	
+	public DiagnosticReporter(
+		DiagnosticChain diagnosticChain,
+		Map<?, ?> context, 
+		EStructuralFeature feature, 
+		EObject object,
+		String diagnosticSource,
+		int diagnosticCode)
+	{
+		this.diagnosticChain = diagnosticChain;
 		this.context = context;
 		this.feature = feature;
 		this.object = object;
 		this.diagnosticSource = diagnosticSource;
 		this.diagnosticCode = diagnosticCode;
 	}
-
-	public boolean status(IStatus status) {
-		if (!status.isOK()) {
-			error(status.getMessage());
-		}
-		
-		return status.isOK();
-	}
 	
 
+	public void rawError(String message) {
+		if (diagnosticChain == null) return;
+		
+		diagnosticChain.add(new BasicDiagnostic(Diagnostic.ERROR, diagnosticSource,
+			diagnosticCode, message, 
+			affectedFeatures.isEmpty() 
+				? new Object[] { object, feature }
+				: new Object[] { object, feature }));
+	}
+
 	public void error(String message) {
-		issue(message, Diagnostic.ERROR);
+		if (diagnosticChain == null) return;
+		
+		// Should we use a label provider to give more details about the error?
+		if (!Objects.equals(context.get(ValidationUtil.SHORT_MESSAGE_KEY), true)) {
+			SubstitutionLabelProvider labelProvider = getLabelProvider();
+			if (labelProvider != null) { 
+				message = "The feature '" + labelProvider.getFeatureLabel(feature) + "' of "
+					+ "'" + labelProvider.getObjectLabel(object) + "' has an error: " + message;
+			}
+		}
+		
+		rawError(message);
+	}
+
+	public SubstitutionLabelProvider getLabelProvider() {
+		return (SubstitutionLabelProvider) context.get(SubstitutionLabelProvider.class);
+	}
+	
+	public void addAffectedFeature(EStructuralFeature newFeature) {
+		affectedFeatures.add(newFeature);
 	}
 
 	public void issue(String message, int severity) {
@@ -66,4 +99,5 @@ public class DiagnosticReporter {
 	public void setFeature(EStructuralFeature feature) {
 		this.feature = feature; 
 	}
+
 }
