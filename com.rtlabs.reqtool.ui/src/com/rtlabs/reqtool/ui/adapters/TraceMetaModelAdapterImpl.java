@@ -74,7 +74,7 @@ public class TraceMetaModelAdapterImpl implements TraceMetaModelAdapter {
 			Command compound = parentCmd.chain(childCmd);
 			parentEditingDomain.getCommandStack().execute(compound);
 		} else {
-			// Different editing domains. This is very weird. It will probably cause confusion and pain.
+			// TODO: Different editing domains. This is very weird. It will probably cause confusion and pain.
 			// Maybe we should just make this illegal and throw an exception instead?
 			parentEditingDomain.getCommandStack().execute(parentCmd);
 			childEditingDomain.getCommandStack().execute(childCmd);

@@ -2,8 +2,14 @@ package com.rtlabs.reqtool.ui.editors.support;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.emf.common.notify.AdapterFactory;
+import org.eclipse.jface.action.ActionContributionItem;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.bindings.keys.KeyStroke;
+import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.nebula.widgets.nattable.NatTable;
 import org.eclipse.nebula.widgets.nattable.config.AbstractRegistryConfiguration;
@@ -32,12 +38,16 @@ import org.eclipse.nebula.widgets.nattable.grid.layer.GridLayer;
 import org.eclipse.nebula.widgets.nattable.grid.layer.RowHeaderLayer;
 import org.eclipse.nebula.widgets.nattable.layer.DataLayer;
 import org.eclipse.nebula.widgets.nattable.layer.ILayer;
+import org.eclipse.nebula.widgets.nattable.layer.LabelStack;
 import org.eclipse.nebula.widgets.nattable.layer.cell.ColumnOverrideLabelAccumulator;
 import org.eclipse.nebula.widgets.nattable.layer.config.DefaultColumnHeaderStyleConfiguration;
 import org.eclipse.nebula.widgets.nattable.layer.stack.DefaultBodyLayerStack;
 import org.eclipse.nebula.widgets.nattable.painter.cell.BackgroundPainter;
 import org.eclipse.nebula.widgets.nattable.painter.cell.GradientBackgroundPainter;
+import org.eclipse.nebula.widgets.nattable.painter.cell.ICellPainter;
+import org.eclipse.nebula.widgets.nattable.painter.cell.ImagePainter;
 import org.eclipse.nebula.widgets.nattable.painter.cell.TextPainter;
+import org.eclipse.nebula.widgets.nattable.painter.cell.decorator.CellPainterDecorator;
 import org.eclipse.nebula.widgets.nattable.painter.cell.decorator.LineBorderDecorator;
 import org.eclipse.nebula.widgets.nattable.painter.cell.decorator.PaddingDecorator;
 import org.eclipse.nebula.widgets.nattable.painter.layer.NatGridLayerPainter;
@@ -54,14 +64,18 @@ import org.eclipse.nebula.widgets.nattable.ui.matcher.MouseEventMatcher;
 import org.eclipse.nebula.widgets.nattable.ui.menu.HeaderMenuConfiguration;
 import org.eclipse.nebula.widgets.nattable.ui.menu.PopupMenuAction;
 import org.eclipse.nebula.widgets.nattable.ui.menu.PopupMenuBuilder;
+import org.eclipse.nebula.widgets.nattable.ui.util.CellEdgeEnum;
 import org.eclipse.nebula.widgets.nattable.util.GUIHelper;
 import org.eclipse.nebula.widgets.nattable.viewport.action.ViewportSelectRowAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.services.IServiceLocator;
@@ -77,29 +91,44 @@ import com.rtlabs.reqtool.ui.Activator;
  * Creates and configures a {@link NatTable} that will show a list of {@link Requirement} objects.
  */
 public class RequirementTableBuilder {
-	
-	private static final String LABEL_BODY = "_BODY"; // BODY seems to affect entire bodyDataLayer
-	private static final String LABEL_TYPE = "TYPE";
-	private static final String LABEL_PRIORITY = "PRIORITY";
-	private static final String LABEL_STATE = "STATE";
+	private static final String LABEL_BODY = "BODY_PROPERTY_COLUMN_LABEL";
+	private static final String LABEL_TYPE = "TYPE_PROPERTY_COLUMN_LABEL";
+	private static final String LABEL_PRIORITY = "PRIORITY_PROPERTY_COLUMN_LABEL";
+	private static final String LABEL_STATE = "STATE_PROPERTY_COLUMN_LABEL";
 
+	private static final String TEST_ERROR_LABEL = "TEST_ERROR_LABEL";
+	private static final String TEST_WARNING_LABEL = "TEST_WARNING_LABEL";
+	private static final String TEST_INFO_LABEL = "TEST_INFO_LABEL";
+	
 	// Input fields
 	private AdapterFactory adapterFactory;
 	private Specification specification;
 	private Composite parent;
 	private IServiceLocator serviceLocator;
+	private IAction decorateRequirementsAction;
 	
+	public void setDecorateRequirementsAction(IAction decorateRequirementsAction) {
+		this.decorateRequirementsAction = decorateRequirementsAction;
+	}
+
 	// Result fields
 	private NatTable natTable;
 	private RowSelectionProvider<Requirement> rowSelectionProvider;
+	private TestResultStatusProvider testResultStatusProvider;
 	
-	public RequirementTableBuilder(AdapterFactory adapterFactory, Specification specification, Composite parent, IServiceLocator serviceLocator) {
+	public RequirementTableBuilder(AdapterFactory adapterFactory, Specification specification, Composite parent, IServiceLocator serviceLocator,
+		TestResultStatusProvider testResultStatusProvider) {
 		this.adapterFactory = adapterFactory;
 		this.specification = specification;
 		this.parent = parent;
 		this.serviceLocator = serviceLocator;
+		this.testResultStatusProvider = testResultStatusProvider;
 	}
 
+	public interface TestResultStatusProvider {
+		IStatus getStatus(Requirement req);
+	}
+	
 	public void build() {
 		// Property names of the Requirement class
 		String[] propertyNames = { "body", "type", "priority", "state", "parents", "children", "created" };
@@ -154,11 +183,10 @@ public class RequirementTableBuilder {
 				new DataLayer(new DefaultCornerDataProvider(columnHeaderDataProvider, rowHeaderDataProvider)), 
 				rowHeaderLayer, 
 				columnHeaderLayer);
-			
 		
 		// Create the grid layer composed with the prior created layer stacks
 		final GridLayer gridLayer = new GridLayer(bodyLayerStack.getViewportLayer(), columnHeaderLayer, rowHeaderLayer, cornerLayer);
-		
+
 		natTable = new NatTable(parent, gridLayer, false);
 		natTable.addConfiguration(new DefaultNatTableStyleConfiguration() {
 			{
@@ -169,22 +197,67 @@ public class RequirementTableBuilder {
 
 		natTable.addConfiguration(headerStyle());
 		natTable.addConfiguration(selectionStyle());
-
+		
 		natTable.addConfiguration(rowHeaderConfiguration(natTable, serviceLocator));
 		natTable.addConfiguration(bodyEditorConfiguration(bodyDataProvider));
 		natTable.addConfiguration(typeEditorConfiguration());
 		natTable.addConfiguration(priorityEditorConfiguration());
 		natTable.addConfiguration(stateEditorConfiguration());
 		
+		natTable.addConfiguration(new AbstractRegistryConfiguration() {
+			@Override
+			public void configureRegistry(IConfigRegistry reg) {
+				ICellPainter oldPainter = natTable.getConfigRegistry().getConfigAttribute(CellConfigAttributes.CELL_PAINTER, DisplayMode.NORMAL, GridRegion.ROW_HEADER);
+				
+				reg.registerConfigAttribute(CellConfigAttributes.CELL_PAINTER, 
+					new CellPainterDecorator(oldPainter, CellEdgeEnum.LEFT,
+						new ImagePainter(getImage(ISharedImages.IMG_OBJS_ERROR_TSK))), 
+					DisplayMode.NORMAL, TEST_ERROR_LABEL);
+				
+				reg.registerConfigAttribute(CellConfigAttributes.CELL_PAINTER, 
+					new CellPainterDecorator(oldPainter, CellEdgeEnum.LEFT,
+						new ImagePainter(getImage(ISharedImages.IMG_OBJS_WARN_TSK))),
+					DisplayMode.NORMAL, TEST_WARNING_LABEL);
+				
+				reg.registerConfigAttribute(CellConfigAttributes.CELL_PAINTER, 
+					new CellPainterDecorator(oldPainter, CellEdgeEnum.LEFT,
+						new ImagePainter(getImage(ISharedImages.IMG_OBJS_INFO_TSK))),
+					DisplayMode.NORMAL, TEST_INFO_LABEL);
+				
+				
+			}
+		});
+
 		natTable.configure();
 
 		// Fill remainder space with gridlines
 		natTable.setLayerPainter(new NatGridLayerPainter(natTable));
 
-		rowSelectionProvider = new RowSelectionProvider<>(bodyLayerStack.getSelectionLayer(), bodyDataProvider, false);
+		addErrorIndications(bodyDataProvider, bodyLayerStack, rowHeaderDataLayer);
 
 		addDragSource(bodyLayerStack, natTable);
 		addDropTarget(specification, bodyDataLayer, gridLayer, natTable);
+	}
+
+	private void addErrorIndications(IRowDataProvider<Requirement> bodyDataProvider, DefaultBodyLayerStack bodyLayerStack, DataLayer rowHeaderDataLayer) {
+		rowHeaderDataLayer.setConfigLabelAccumulator(
+			(LabelStack configLabels, int col, int row) -> {
+				Requirement req = bodyDataProvider.getRowObject(row);
+				if (col != 0 || req == null) return;
+				IStatus s = testResultStatusProvider.getStatus(req);
+				if (s == null) return;
+				if (s.getSeverity() == IStatus.INFO) configLabels.addLabel(TEST_INFO_LABEL);
+				if (s.getSeverity() == IStatus.WARNING) configLabels.addLabel(TEST_WARNING_LABEL);
+				else if (s.getSeverity() == IStatus.ERROR) configLabels.addLabel(TEST_ERROR_LABEL);
+		});
+		
+
+		
+		new ModelTooltip(natTable, bodyDataProvider, 
+			e -> Optional.ofNullable(testResultStatusProvider.getStatus((Requirement) e))
+				.map(s -> s.getMessage()).orElse(""), 
+			GridRegion.ROW_HEADER);
+		rowSelectionProvider = new RowSelectionProvider<>(bodyLayerStack.getSelectionLayer(), bodyDataProvider, false);
 	}
 
 	public ISelectionProvider getRowSelectionProvider() {
@@ -196,21 +269,28 @@ public class RequirementTableBuilder {
 	}
 	
 	
-	private static HeaderMenuConfiguration rowHeaderConfiguration(final NatTable natTable, IServiceLocator serviceLocator) {
-		return new HeaderMenuConfiguration(natTable) {
+	private HeaderMenuConfiguration rowHeaderConfiguration(final NatTable natTab, IServiceLocator serviceLoc) {
+		return new HeaderMenuConfiguration(natTab) {
 			@Override
 			protected PopupMenuBuilder createRowHeaderMenu(NatTable table) {
 				return super.createRowHeaderMenu(table)
-					.withContributionItem(new CommandContributionItem(new CommandContributionItemParameter(serviceLocator,
-						Activator.PLUGIN_ID + ".table.menu.generateRobotTestCase", 
-						"com.rtlabs.reqtool.ui.generateRobotTestCase", 
-						CommandContributionItem.STYLE_PUSH)) {
-							@Override
-							public boolean isDynamic() {
-								// Work-around for weird behaviour (possibly bug) in MenuManager, which makes item 
-								// disappear every other time the menu is showed
-								return true;
-							}
+					.withContributionItem(new CommandContributionItem(new CommandContributionItemParameter(serviceLoc,
+							Activator.PLUGIN_ID + ".table.menu.generateRobotTestCase", 
+							"com.rtlabs.reqtool.ui.generateRobotTestCase", 
+							CommandContributionItem.STYLE_PUSH)) {
+								@Override
+								public boolean isDynamic() {
+									// Work-around for weird behaviour (possibly bug) in MenuManager, which makes item 
+									// disappear every other time the menu is showed
+									return true;
+								}
+						})
+					.withContributionItem(new ActionContributionItem(decorateRequirementsAction) {
+						@Override
+						public boolean isDynamic() {
+							return true;
+						}
+						
 					});
 			}
 			
@@ -241,6 +321,10 @@ public class RequirementTableBuilder {
 					new PopupMenuAction(this.cornerMenu));
 			}
 		};
+	}
+
+	private static Image getImage(String image) {
+		return PlatformUI.getWorkbench().getSharedImages().getImage(image);
 	}
 
 	@SuppressWarnings("unused")
@@ -278,7 +362,7 @@ public class RequirementTableBuilder {
 
 	private static DefaultSelectionStyleConfiguration selectionStyle() {
 		// Gives the selection same font as rest of the table, with font colour white and gray background 
-		DefaultSelectionStyleConfiguration selectionConfig = new DefaultSelectionStyleConfiguration() {
+		return new DefaultSelectionStyleConfiguration() {
 			@Override
 			protected void configureSelectionStyle(IConfigRegistry configRegistry) {
 				Style cellStyle = new Style();
@@ -290,23 +374,27 @@ public class RequirementTableBuilder {
 			@Override
 			protected void configureHeaderHasSelectionStyle(IConfigRegistry configRegistry) {
 				super.configureHeaderHasSelectionStyle(configRegistry);
-				// Overwrite with and empty style
-				configRegistry.registerConfigAttribute(CellConfigAttributes.CELL_STYLE, new Style(), DisplayMode.SELECT, GridRegion.COLUMN_HEADER);
+				// Overwrite with empty style
+				configRegistry.registerConfigAttribute(
+					CellConfigAttributes.CELL_STYLE, new Style(), DisplayMode.SELECT, GridRegion.COLUMN_HEADER);
 			}
 		};
-		return selectionConfig;
 	}
 	
 	private static IConfiguration bodyEditorConfiguration(IRowDataProvider<Requirement> dataProvider) {
 		return new AbstractRegistryConfiguration() {
 			@Override
 			public void configureRegistry(IConfigRegistry configRegistry) {
+				MultiLineTextCellEditor editor = new MultiLineTextCellEditor(false);
+				editor.enableContentProposal(new TextContentAdapter(), 
+					new TextWordsContentProposalProvider("feature", "scenario"), 
+					KeyStroke.getInstance(SWT.CTRL, SWT.SPACE), null);
+				
 				configRegistry.registerConfigAttribute(
 						EditConfigAttributes.CELL_EDITOR,
-						new MultiLineTextCellEditor(false),
+						editor,
 						DisplayMode.EDIT,
 						LABEL_BODY);
-	
 	
 				// Highlighting converter for normal mode
 				configRegistry.registerConfigAttribute(
@@ -322,7 +410,6 @@ public class RequirementTableBuilder {
 						DisplayMode.EDIT,
 						LABEL_BODY);
 	
-				
 				Style cellStyle = new Style();
 				cellStyle.setAttributeValue(
 						CellStyleAttributes.HORIZONTAL_ALIGNMENT,
@@ -346,7 +433,7 @@ public class RequirementTableBuilder {
 						LABEL_BODY);
 	
 				// Configure the multi line text editor to always open in a sub-dialog.
-				// NOTE: Due to a bug in NatTable it is not possible to use this together with and error handler
+				// NOTE: Due to a bug in NatTable it is not possible to use this together with an error handler
 				// with allowCommit=true.
 				//
 				//			configRegistry.registerConfigAttribute(
@@ -361,7 +448,7 @@ public class RequirementTableBuilder {
 				// editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_TITLE, "Enter requirement description");
 				// editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_ICON, display.getSystemImage(SWT.ICON_WARNING));
 				// editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_RESIZABLE, Boolean.TRUE);
-	            // 
+				// 
 				// Point size = new Point(400, 300);
 				// editDialogSettings.put(ICellEditDialog.DIALOG_SHELL_SIZE, size);
 	            // 

@@ -46,6 +46,8 @@ public class SpecificationEditor extends FormEditor implements EditContext {
 	private DataBindingContext dataBindingContext = new EMFDataBindingContext();
 
 	private WritableValue<Specification> specification;
+
+	private RequirementTablePage tablePage;
 	
 	public SpecificationEditor() {
 		initializeEditingDomain();
@@ -135,8 +137,8 @@ public class SpecificationEditor extends FormEditor implements EditContext {
 	@Override
 	protected void addPages() {
 		try {
-			// Use this method instead of addPage(IFormPage) to get proper initialisation  
-			addPage(new RequirementTablePage(this, getSpecification()), getEditorInput());
+			tablePage = new RequirementTablePage(this, getSpecification());
+			addPage(tablePage, getEditorInput());
 			addPage(new SpecificationDetailsPage(this, getSpecification()), getEditorInput());
 		} catch (PartInitException e) {
 			throw new RuntimeException(e);
@@ -163,5 +165,9 @@ public class SpecificationEditor extends FormEditor implements EditContext {
 
 	public Specification getSpecificationValue() {
 		return getSpecification().getValue();
+	}
+	
+	public void decorateWithTestResults() {
+		tablePage.decorateWithTestResults();
 	}
 }

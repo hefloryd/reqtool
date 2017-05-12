@@ -65,6 +65,12 @@
             categoryId="com.rtlabs.reqtool.ui.commands.category"
             name="Generate Robot Framework Tests">
       </command>
+      <command
+            defaultHandler="com.rtlabs.reqtool.ui.handler.DecorateRequirementsHandler"
+            id="com.rtlabs.reqtool.ui.decorateRequirements"
+            categoryId="com.rtlabs.reqtool.ui.commands.category"
+            name="Decorate Requirements Table with Test Results">
+      </command>
    </extension>
    
    <extension

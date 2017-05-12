@@ -11,6 +11,7 @@ import java.util.Optional;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.Status;
 
 import com.google.common.collect.ImmutableList;
 import com.rtlabs.reqtool.ui.Activator;
@@ -53,9 +54,16 @@ public class Result<T> {
 		return result;
 	}
 
+	public IStatus getStatus() {
+		if (statuses.isEmpty()) return Status.OK_STATUS;
+		if (statuses.size() == 1) return statuses.get(0);
+		return new MultiStatus(Activator.PLUGIN_ID, -1, statuses.toArray(new IStatus[0]), null, null);
+	}
+
 	public List<IStatus> getStatuses() {
 		return statuses;
 	}
+
 	
 	public boolean isNoErrors() {
 		return isAllLessSevere(IStatus.ERROR);
@@ -100,7 +108,7 @@ public class Result<T> {
 		return statuses.get(0).getMessage();
 	}
 	
-	public <R> Result<R> castError() {
+	public <R> Result<R> castFailture() {
 		if (result != null) throw new IllegalStateException();
 		
 		@SuppressWarnings("unchecked")

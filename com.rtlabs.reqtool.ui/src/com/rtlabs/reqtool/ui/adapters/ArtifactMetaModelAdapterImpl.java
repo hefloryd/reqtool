@@ -36,9 +36,19 @@ public class ArtifactMetaModelAdapterImpl extends AbstractArtifactMetaModelAdapt
 		return null;
 	}
 
-	@Override
+	// TODO: Don't annotate with @Override to be able to work with both old and new API. 
+	// Remove this method the implemented method disappears. 
+	// @Override
+	public EObject createArtifact(EObject artifactModel, String artifactHandler,
+		String artifactId, String artifactName, String path) {
+		return createArtifact(artifactModel, artifactHandler, artifactId, artifactId, artifactName, path);
+	}
+
+	// TODO: Don't annotate to be able to work with both old and new API. Add @Override annotation
+	// when this method has been added to the interface.
+	// @Override
 	public EObject createArtifact(EObject artifactModel, String artifactHandler, String artifactUri,
-			String artifactName, String path)
+		String artifactId, String artifactName, String path)
 	{
 		EObject existing = getArtifact(artifactModel, artifactHandler, artifactUri);
 		if (existing != null) return existing;
@@ -49,6 +59,7 @@ public class ArtifactMetaModelAdapterImpl extends AbstractArtifactMetaModelAdapt
 			artifact.setArtifactHandler(artifactHandler);
 			artifact.setName(artifactName);
 			artifact.setUri(artifactUri);
+			artifact.setIdentifier(artifactId);
 			container.getArtifacts().add(artifact);
 			return artifact;
 		}
@@ -76,6 +87,7 @@ public class ArtifactMetaModelAdapterImpl extends AbstractArtifactMetaModelAdapt
 		if (artifact instanceof Artifact) {
 			return ((Artifact) artifact).getArtifactHandler();
 		}
+
 		return null;
 	}
 
@@ -105,6 +117,20 @@ public class ArtifactMetaModelAdapterImpl extends AbstractArtifactMetaModelAdapt
 		
 		return null;
 	}
+	
+	@Override
+	public String getArtifactIdentifier(EObject artifact) {
+		if (artifact instanceof Artifact) {
+			return ((Artifact) artifact).getIdentifier();
+		}
+		
+		if (artifact instanceof Requirement) {
+			return Integer.toString(((Requirement) artifact).getIdentifier());
+		}
+		
+		return null;
+	}
+
 
 	@Override
 	public List<EObject> getAllArtifacts(EObject artifactModel) {

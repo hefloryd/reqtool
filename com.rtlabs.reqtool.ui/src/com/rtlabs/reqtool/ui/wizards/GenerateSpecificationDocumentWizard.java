@@ -161,7 +161,7 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 
 	private Result<Boolean> generateSpecDoc() throws CoreException, IOException {
 		Result<Specification> specResult = readSpec();
-		if (!specResult.isAllOk()) return specResult.castError();
+		if (!specResult.isAllOk()) return specResult.castFailture();
 		Specification spec = specResult.getResult();
 
 		Path specFile = Paths.get(
@@ -175,7 +175,7 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 		if (!spec.getDocumentPrefixFile().isEmpty()) {
 			Result<Path> prefixPath = toExistingFile(spec.getDocumentPrefixFile(), 
 				specFile.getParent(), "Document prefix file");
-			if (!prefixPath.isAllOk()) return prefixPath.castError();
+			if (!prefixPath.isAllOk()) return prefixPath.castFailture();
 			docPrefix = readFile(prefixPath.getResult(), StandardCharsets.UTF_8);
 		}
 		
@@ -183,7 +183,7 @@ public class GenerateSpecificationDocumentWizard extends Wizard implements IExpo
 		if (!spec.getDocumentSuffixFile().isEmpty()) {
 			Result<Path> postfixPath = toExistingFile(spec.getDocumentSuffixFile(), 
 				specFile.getParent(), "Document suffix file");
-			if (!postfixPath.isAllOk()) return postfixPath.castError();
+			if (!postfixPath.isAllOk()) return postfixPath.castFailture();
 			docSuffix = readFile(postfixPath.getResult(), StandardCharsets.UTF_8);
 		}
 		

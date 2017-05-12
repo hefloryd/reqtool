@@ -35,7 +35,13 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.databinding.property,
  org.eclipse.emf.edit;visibility:=reexport,
  org.eclipse.emf.databinding.edit,
- com.rtlabs.reqtool.common
+ com.rtlabs.reqtool.common,
+ org.eclipse.mylyn.builds.ui,
+ org.eclipse.mylyn.builds.core,
+ org.eclipse.mylyn.commons.repositories.core,
+ org.apache.httpcomponents.httpclient,
+ org.apache.httpcomponents.httpcore,
+ org.eclipse.mylyn.commons.core
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: lib/gherkin-4.0.0.jar,

@@ -8,7 +8,7 @@ import org.eclipse.emf.edit.provider.IItemPropertySource;
 import org.eclipse.nebula.widgets.nattable.data.IColumnPropertyAccessor;
 
 /**
- * A class which gets and sets property values on EObjects. Used by NatList. 
+ * Use by NatList to get and set column values to and from EObjects. Based on property names. 
  */
 public class RequirementTableColumnPropertyAccessor<T extends EObject> implements IColumnPropertyAccessor<T> {
 	

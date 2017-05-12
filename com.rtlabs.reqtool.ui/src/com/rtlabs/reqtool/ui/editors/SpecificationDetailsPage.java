@@ -1,6 +1,9 @@
 package com.rtlabs.reqtool.ui.editors;
 
 import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION;
+import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION__BUILD_NUMBER;
+import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION__BUILD_PLAN;
+import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION__BUILD_SERVER_URL;
 import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION__DESCRIPTION;
 import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION__DOCUMENT_PREFIX_FILE;
 import static com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals.SPECIFICATION__DOCUMENT_SUFFIX_FILE;
@@ -67,9 +70,6 @@ class SpecificationDetailsPage extends FormPage implements IEditingDomainProvide
 		layout.maxNumColumns = 2;
 		body.setLayout(layout);
 		
-		
-		
-		
 		Section section = toolkit.createSection(body, Section.TITLE_BAR);
 		section.setText("Specification Details");
 		toolkit.paintBordersFor(section);
@@ -83,14 +83,15 @@ class SpecificationDetailsPage extends FormPage implements IEditingDomainProvide
 		
 		guiBuilder.createFeatureControl(SPECIFICATION__TITLE);
 		guiBuilder.createFeatureControl(SPECIFICATION__DESCRIPTION);
-//		guiBuilder.createFeatureControl(container, SPECIFICATION__DOCUMENT_PREFIX_FILE);
-//		guiBuilder.createFeatureControl(container, SPECIFICATION__DOCUMENT_SUFFIX_FILE);
-		
 		
 		guiBuilder.createTextSelectControls(SPECIFICATION__DOCUMENT_PREFIX_FILE, 
 			fileSelectionDialog(container.getShell(), "Select Prefix file"));
 		guiBuilder.createTextSelectControls(SPECIFICATION__DOCUMENT_SUFFIX_FILE, 
 			fileSelectionDialog(container.getShell(), "Select Suffix file"));
+		
+		guiBuilder.createFeatureControl(SPECIFICATION__BUILD_SERVER_URL);
+		guiBuilder.createFeatureControl(SPECIFICATION__BUILD_PLAN);
+		guiBuilder.createFeatureControl(SPECIFICATION__BUILD_NUMBER);
 
 		editContext.getDataBindingContext().updateTargets();
 	}
