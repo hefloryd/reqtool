@@ -5,6 +5,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.rtlabs.reqtool.model.requirements.Artifact;
 import com.rtlabs.reqtool.model.requirements.ArtifactContainer;
+import com.rtlabs.reqtool.model.requirements.Requirement;
 import com.rtlabs.reqtool.model.requirements.RequirementsFactory;
 
 public class ArtifactMetaModelAdapterImpl extends AbstractArtifactMetaModelAdapter {
@@ -58,18 +59,26 @@ public class ArtifactMetaModelAdapterImpl extends AbstractArtifactMetaModelAdapt
 	@Override
 	public String getArtifactName(EObject artifact) {
 		if (artifact instanceof Artifact) {
-			Artifact a = (Artifact) artifact;
-			return a.getName();
+			return ((Artifact) artifact).getName();
 		}
+		
+		if (artifact instanceof Requirement) {
+			return ((Requirement) artifact).getName();
+		}
+
 		return null;
 	}
 
 	@Override
 	public String getArtifactUri(EObject artifact) {
 		if (artifact instanceof Artifact) {
-			Artifact a = (Artifact) artifact;
-			return a.getUri();
+			return ((Artifact) artifact).getUri();
 		}
+		
+		if (artifact instanceof Requirement) {
+			return artifact.eResource().getURI().toPlatformString(true);
+		}
+		
 		return null;
 	}
 

@@ -18,7 +18,7 @@ import com.rtlabs.reqtool.model.requirements.RequirementsPackage;
 import com.rtlabs.reqtool.model.requirements.RequirementsPackage.Literals;
 import com.rtlabs.reqtool.model.requirements.Traceable;
 
-class TraceMetaModelAdapterImpl implements TraceMetaModelAdapter {
+public class TraceMetaModelAdapterImpl implements TraceMetaModelAdapter {
 
 	@Override
 	public EObject createModel() {
@@ -55,8 +55,7 @@ class TraceMetaModelAdapterImpl implements TraceMetaModelAdapter {
 			return null;
 		
 		createTrace(parent, child);
-		//annotateArtifact(child);
-		return null;
+		return parent;
 	}
 
 	public void createTrace(Traceable parent, Traceable child) {
@@ -75,6 +74,8 @@ class TraceMetaModelAdapterImpl implements TraceMetaModelAdapter {
 			Command compound = parentCmd.chain(childCmd);
 			parentEditingDomain.getCommandStack().execute(compound);
 		} else {
+			// Different editing domains. This is very weird. It will probably cause confusion and pain.
+			// Maybe we should just make this illegal and throw an exception instead?
 			parentEditingDomain.getCommandStack().execute(parentCmd);
 			childEditingDomain.getCommandStack().execute(childCmd);
 		}			
@@ -140,7 +141,9 @@ class TraceMetaModelAdapterImpl implements TraceMetaModelAdapter {
 		if (element instanceof Traceable) {
 			Traceable t = (Traceable) element;
 			traces.add(new Connection(t, t.getChildren(), t));
+			traces.add(new Connection(t, t.getParents(), t));
 		}
+		
 		return traces;
 	}
 
@@ -149,6 +152,5 @@ class TraceMetaModelAdapterImpl implements TraceMetaModelAdapter {
 		// TODO
 		return getConnectedElements(element, traceModel);
 	}
-
 }
 
