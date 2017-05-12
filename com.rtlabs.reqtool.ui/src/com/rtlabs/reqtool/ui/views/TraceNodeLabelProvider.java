@@ -89,7 +89,7 @@ public class TraceNodeLabelProvider extends LabelProvider implements IEntityStyl
 
 	@Override
 	public int getConnectionStyle(Object src, Object dest) {
-		System.out.println(src + " -> " + dest);
+		// System.out.println(src + " -> " + dest);
 		return ZestStyles.CONNECTIONS_DIRECTED;		
 	}
 

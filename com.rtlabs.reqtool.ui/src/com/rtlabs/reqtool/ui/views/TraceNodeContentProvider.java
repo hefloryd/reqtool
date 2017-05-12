@@ -26,7 +26,7 @@ public class TraceNodeContentProvider implements IStructuredContentProvider, IGr
 		List<EObject> list = new ArrayList<EObject>();
 		//list.addAll(traceable.getParents());		
 		list.addAll(traceable.getChildren());		
-		System.out.println("getConnectedTo(" + traceable + "): " + list);
+		// System.out.println("getConnectedTo(" + traceable + "): " + list);
 		return list.toArray();
 	}
 
@@ -52,7 +52,7 @@ public class TraceNodeContentProvider implements IStructuredContentProvider, IGr
 		list.addAll(requirement.getParents());
 		list.addAll(requirement.getChildren());		
 		list.add(requirement);
-		System.out.println("getElements(" + requirement + "): " + list);
+		// System.out.println("getElements(" + requirement + "): " + list);
 		return list.toArray();
 	}
 
