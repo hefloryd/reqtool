@@ -2,7 +2,7 @@
 
 ReqTool is a **model** and an **requirements editor** for the Eclipse [Capra][capra_home] framework. ReqTool is developed by [rt-labs][rt_home] in cooperation with a [research group][capra_gu] at the software engineering deportment at University of Gothenburg. It is partly funded by Vinnova within the [AMALTHEA4public][vinnova] project.
 
-Capra is a traceability framework which enables applications to create and manage links between different forms of artifacts in Eclipse. ReqTool provides a concrete Capra model in the for *specification files*. Specification files aer XML files in that are stored in Eclipse workspace. They most importantly contain lists of requirements.
+Capra is a traceability framework which enables applications to create and manage links between different forms of artifacts in Eclipse. ReqTool provides a concrete Capra model in the form of *specification files*. Specification files are XML files in that are stored in Eclipse workspace. They most importantly contain lists of requirements.
 
 The following is a screen shot of the requirements editor and the requirements tree view.
 
@@ -12,7 +12,7 @@ The following is a screen shot of the requirements editor and the requirements t
 
 ReqTool demonstrate the capabilities of the Capra framework and the benefits of integrating a requirements tool with Capra and the Eclipse framework.
 
-By using these framework the ReqTool editor can work with a wide variety of different kinds of artifacts, such as source code elements, Microsoft Word documents and test cases.
+By using these frameworks the ReqTool editor can work with a wide variety of different kinds of artifacts, such as source code elements, Microsoft Word documents and test cases.
 
 This can give software developers a convenient way to manage requirement, their links to other artifacts, and the status of tests for them. The  convince and overview that this provides can result in requirements with a higher quality and better control of the development process and the resulting software.
 
