@@ -26,15 +26,17 @@ This can give software developers a convenient way to manage requirement, their 
 ### Advanced features of the ReqTool editor
 
 - **Visualisation** of the requirement tree
-- **Validation and syntax highlighting** of Gherkin style requirements and user story requirements
-    - Uses Gherkin parser from the Cucumber project
-- **Generation of Robot Framework tests** from Gherkin requirements
-    - Uses Gherkin parser from the Cucumber project
-- **Generation of specification documents** in Markdown
+- **Validation and syntax highlighting** of [Gherkin][gherkin] style requirements and user story requirements
+    - Uses Gherkin parser from the [Cucumber project][cucumber].
+- **Generation of [Robot Framework][robot_framework] tests** from Gherkin requirements
+    - Uses Gherkin parser from the Cucumber project.
+- **Generation of specification documents** in the [Markdown][markdown] file format
+    - The generated files can easily be used to generated PDF or HTML documents with any of a large number of third-party tools.
 
 ## Future work
 
-- Visualise **test results** in the requirements table
+- Visualise **test results** in the requirements table.
+    - The Eclipse [Mylyn][mylyn] tool is used to integrate with a large number of different kinds of test and continuous integration servers.
 - Export/import **ReqIF**
 - GUI work: Better editing and navigation, fix bugs
 
@@ -43,3 +45,8 @@ This can give software developers a convenient way to manage requirement, their 
 [rt_home]: http://rt-labs.com
 [capra_gu]: http://medarbetarportalen.gu.se/staff/f--publikationskort/?publicationId=249696
 [vinnova]: https://www.vinnova.se/p/amalthea4public/
+[gherkin]: https://docs.cucumber.io/docs/gherkin.html
+[cucumber]: https://cucumber.io/
+[markdown]: https://en.wikipedia.org/wiki/Markdown
+[mylyn]: https://www.eclipse.org/mylyn/
+[robot_framework]: http://robotframework.org/
