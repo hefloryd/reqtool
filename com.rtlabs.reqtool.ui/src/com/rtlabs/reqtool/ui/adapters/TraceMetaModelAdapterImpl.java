@@ -22,7 +22,7 @@ public class TraceMetaModelAdapterImpl implements TraceMetaModelAdapter {
 
 	@Override
 	public EObject createModel() {
-		throw new UnsupportedOperationException();
+		throw null;
 	}
 
 	@Override
@@ -82,16 +82,33 @@ public class TraceMetaModelAdapterImpl implements TraceMetaModelAdapter {
 	}
 
 	@Override
-	public void deleteTrace(EObject first, EObject second, EObject traceModel) {
-		if (!(first instanceof Traceable))
-			return;
+	public void deleteTrace(List<Connection> connections, EObject eTarget) {
+		if (!(eTarget instanceof Traceable)) return;
+		Traceable target = (Traceable) eTarget;
+		
+		for (Connection conn : connections) {
+			if (conn.getOrigin() == target) {
+				for (EObject other : conn.getTargets()) {
+					if (other instanceof Traceable) { 
+						deleteTrace(target, (Traceable) other);
+					}
+				}
+			} else {
+				if (conn.getOrigin() instanceof Traceable) {
+					Traceable origin = (Traceable) conn.getOrigin();
+					for (EObject other : conn.getTargets()) {
+						if (other instanceof Traceable) { 
+							deleteTrace(origin, (Traceable) other);
+						}
+					}
+				}
+			}
+		}
+	}
 
-		if (!(second instanceof Traceable))
-			return;
-
-		Traceable _first = (Traceable) first;
-		Traceable _second = (Traceable) second;
-		deleteTrace(_first, _second);
+	@Override
+	public List<Connection> getAllTraceLinks(EObject arg0) {
+		throw new UnsupportedOperationException();
 	}
 
 	public void deleteTrace(Traceable first, Traceable second) {

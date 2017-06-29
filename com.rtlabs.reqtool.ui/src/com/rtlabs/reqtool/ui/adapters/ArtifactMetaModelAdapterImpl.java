@@ -1,8 +1,10 @@
 package com.rtlabs.reqtool.ui.adapters;
 
 import org.eclipse.capra.core.adapters.AbstractArtifactMetaModelAdapter;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.ecore.EObject;
 
+import com.rtlabs.common.util.RtUtil;
 import com.rtlabs.reqtool.model.requirements.Artifact;
 import com.rtlabs.reqtool.model.requirements.ArtifactContainer;
 import com.rtlabs.reqtool.model.requirements.Requirement;
@@ -14,10 +16,17 @@ public class ArtifactMetaModelAdapterImpl extends AbstractArtifactMetaModelAdapt
 	public EObject createModel() {
 		throw new UnsupportedOperationException();
 	}
+	
+	@Override
+	public IPath getArtifactPath(EObject artifact) {
+		if (!(artifact instanceof Requirement)) return null;
+		return RtUtil.toEclipseFile(((Requirement) artifact).eResource().getURI()).getFullPath();
+	}
 
 	@Override
 	public EObject createArtifact(EObject artifactModel, String artifactHandler, String artifactUri,
-			String artifactName) {
+			String artifactName, String path)
+	{
 		EObject existing = getArtifact(artifactModel, artifactHandler, artifactUri);
 		if (existing != null)
 			return existing;
@@ -81,5 +90,4 @@ public class ArtifactMetaModelAdapterImpl extends AbstractArtifactMetaModelAdapt
 		
 		return null;
 	}
-
 }

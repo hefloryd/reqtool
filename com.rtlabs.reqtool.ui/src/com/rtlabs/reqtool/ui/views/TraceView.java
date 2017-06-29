@@ -1,6 +1,7 @@
 package com.rtlabs.reqtool.ui.views;
 
 import org.eclipse.capra.core.adapters.ArtifactMetaModelAdapter;
+import org.eclipse.capra.core.adapters.Connection;
 import org.eclipse.capra.core.adapters.TraceMetaModelAdapter;
 import org.eclipse.capra.core.adapters.TracePersistenceAdapter;
 import org.eclipse.capra.core.handlers.IArtifactHandler;
@@ -34,6 +35,7 @@ import org.eclipse.zest.layouts.LayoutAlgorithm;
 import org.eclipse.zest.layouts.LayoutStyles;
 import org.eclipse.zest.layouts.algorithms.TreeLayoutAlgorithm;
 
+import com.google.common.collect.ImmutableList;
 import com.rtlabs.reqtool.model.requirements.Artifact;
 import com.rtlabs.reqtool.model.requirements.Requirement;
 
@@ -42,6 +44,7 @@ public class TraceView extends ViewPart implements IZoomableWorkbenchPart, IShow
 	private GraphViewer viewer;
 	private ISelectionListener selectionListener;
 	private TraceMetaModelAdapter metaModelAdapter;
+	@SuppressWarnings("unused")
 	private TracePersistenceAdapter tracePersistenceAdapter;
 	private GlobalDeleteActionHandler deleteAction;
 	private ArtifactMetaModelAdapter artifactAdapter;
@@ -58,9 +61,8 @@ public class TraceView extends ViewPart implements IZoomableWorkbenchPart, IShow
 					EObject source = (EObject) connectionData.source;
 					EObject dest = (EObject) connectionData.dest;
 					
-					EObject traceModel = tracePersistenceAdapter.getTraceModel(source);
-					
-					metaModelAdapter.deleteTrace(source, dest, traceModel);
+					metaModelAdapter.deleteTrace(ImmutableList.of(new Connection(source, ImmutableList.of(dest), null)), source);
+
 					viewer.refresh();
 					viewer.applyLayout();
 				}				

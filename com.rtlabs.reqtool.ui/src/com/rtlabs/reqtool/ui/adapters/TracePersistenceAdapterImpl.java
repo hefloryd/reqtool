@@ -14,8 +14,7 @@ public class TracePersistenceAdapterImpl implements TracePersistenceAdapter {
 		Resource resource = object.eResource();
 		EObject rootObject = resource.getContents().get(0);
 		if (rootObject instanceof Specification) {
-			Specification specification = (Specification) rootObject;
-			return specification;			
+			return (Specification) rootObject;
 		}		
 		return null;
 	}
@@ -33,17 +32,16 @@ public class TracePersistenceAdapterImpl implements TracePersistenceAdapter {
 
 	@Override
 	public EObject getTraceModel(ResourceSet resourceSet) {
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
 	@Override
 	public EObject getArtifactWrappers(ResourceSet resourceSet) {
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
 	@Override
 	public void saveTracesAndArtifacts(EObject traceModel, EObject artifactModel) {
 		// Do nothing, model is saved by editor
 	}
-
 }
