@@ -22,7 +22,7 @@ public class TraceMetaModelAdapterImpl implements TraceMetaModelAdapter {
 
 	@Override
 	public EObject createModel() {
-		throw null;
+		return null;
 	}
 
 	@Override
@@ -86,6 +86,7 @@ public class TraceMetaModelAdapterImpl implements TraceMetaModelAdapter {
 		if (!(eTarget instanceof Traceable)) return;
 		Traceable target = (Traceable) eTarget;
 		
+		// Run deleteTrace for all the traceable in the connections list
 		for (Connection conn : connections) {
 			if (conn.getOrigin() == target) {
 				for (EObject other : conn.getTargets()) {

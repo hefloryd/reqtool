@@ -1,7 +1,6 @@
 package com.rtlabs.reqtool.ui;
 
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -19,7 +18,6 @@ import com.rtlabs.reqtool.model.requirements.Requirement;
 public class TraceManager {
 
 	public void createTrace(Requirement requirement, Object data) {
-		
 		TraceMetaModelAdapter traceAdapter = ExtensionPointHelper.getTraceMetamodelAdapter().get();
 		TracePersistenceAdapter persistenceAdapter = ExtensionPointHelper.getTracePersistenceAdapter().get();
 
@@ -31,12 +29,11 @@ public class TraceManager {
 
 		if (data instanceof StructuredSelection) {
 			StructuredSelection selection = (StructuredSelection) data;
-			List<?> selectionList = selection.toList();
-			ArrayList<Object> list = new ArrayList<Object>(selectionList);
-			list.add(0, requirement);
-
-			List<EObject> wrappers = artifactHelper.createWrappers(list);
-
+			List<EObject> wrappers = artifactHelper.createWrappers(selection.toList());
+			
+			// Add requirement to the list of wrappers, don't go through the artifact handlers
+			wrappers.add(0, requirement);
+			
 			Collection<EClass> traceTypes = traceAdapter.getAvailableTraceTypes(wrappers);
 
 			traceTypes.stream().findFirst().ifPresent((EClass chosenType) -> {
