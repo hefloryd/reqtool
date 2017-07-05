@@ -63,10 +63,11 @@ ReqTool depends on the following software. If it doesn't exist in the Eclipse wo
 * Java 8
 * The Eclipse Neon platform
 * Eclipse Orbit
-* The `org.eclipse.capra.core` Eclipse bundle version 0.7.0. TODO: These is yet no mechanism to use 
-  an old version of Capra, except by checking out the source code and placing it in 
-  the Eclipse workspace. 
+* The `org.eclipse.capra.core` Eclipse bundle.
+* To link requirements to artifact the Capra handlers are needed.
 * Eclipse Nebula NatTable
+
+The Capra packages are included in the ReqTool update site.
 
 ## Downloading, Building and Running
 
@@ -89,6 +90,12 @@ using the PDE and modeling tooling.
 
 * To build from *within Eclipse*, first set the target platform file in `com.rtlabs.reqtool.releng.target`. 
   The perform a normal build.
+
+#### Capra as a Requirement
+
+The needed Capra bundles are downloaded automatically as a part of the target platform.
+
+If that fails, or to work with a modified version of Capra, its source code repository can be cloned, and its projects imported into the Eclipse workspace.
 
 ### Running
 
