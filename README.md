@@ -42,6 +42,11 @@ ReqTool is created because it is valuable with a simple, lightweight tool that i
     - The generated files can easily be used to generated PDF or HTML documents with any of a large number of third-party tools.
     - Tricker with the *Export* -> *ReqTool* -> *Specification Document* command.
 
+- **Visualise test results** in the requirements table
+    - A context menu triggered command fetches test results from a build server, matches them against the artifacts linked in the table, and decorates the table to indicate test results.
+    - The build server is configured in the Mylyn *Builds* view.
+    - The Eclipse [Mylyn][mylyn] API is to fetch test results.
+
 ## Prerequisites and Dependencies
 
 ### Build Tools
@@ -62,9 +67,14 @@ ReqTool depends on the following software. If it doesn't exist in the Eclipse wo
   an old version of Capra, except by checking out the source code and placing it in 
   the Eclipse workspace. 
 * Eclipse Nebula NatTable
-* TODO: ReqIF?
 
 ## Downloading, Building and Running
+
+### Installing pre-built version in existing Eclipse
+
+TODO
+
+### Downloading source code
 
 Obtain a copy of the source code by cloning the ReqTool repository with the following Git command:
 
@@ -78,7 +88,7 @@ using the PDE and modeling tooling.
 * To build *using Maven*, run the command `mvn verify` from inside the `com.rtlabs.reqtool.releng` directory.
 
 * To build from *within Eclipse*, first set the target platform file in `com.rtlabs.reqtool.releng.target`. 
-  The perform a normal build. 
+  The perform a normal build.
 
 ### Running
 
@@ -92,10 +102,15 @@ handle multiple models running at once.
 
 ## Future work
 
-- Visualise **test results** in the requirements table.
-    - The Eclipse [Mylyn][mylyn] tool is used to integrate with a large number of different kinds of test and continuous integration servers.
+### Features
+
 - Export/import **ReqIF**
 - GUI work: Better editing and navigation, fix bugs
+
+### Bugs, Defects and Limitations
+- It is not possible to input newlines in the requirements body editor. The entry key commits the current text.
+- It is currently not possible to remove linked artifacs from requirements (its fairly easy to edit the XML though :) ).
+- Many other GUI and usability features...
 
 [req_table_img]: com.rtlabs.reqtool.documentation/Requirement_table_screenshot.png
 [capra_home]: https://projects.eclipse.org/projects/modeling.capra
