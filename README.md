@@ -72,7 +72,7 @@ ReqTool depends on the following software. If it doesn't exist in the Eclipse wo
 
 ### Installing pre-built version in existing Eclipse
 
-TODO
+An update site file is [availible for download][site].
 
 ### Downloading source code
 
@@ -122,3 +122,4 @@ handle multiple models running at once.
 [markdown]: https://en.wikipedia.org/wiki/Markdown
 [mylyn]: https://www.eclipse.org/mylyn/
 [robot_framework]: http://robotframework.org/
+[site]: https://github.com/hefloryd/reqtool/releases
