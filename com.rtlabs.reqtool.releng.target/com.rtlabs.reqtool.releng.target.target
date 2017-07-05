@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="Neon" sequenceNumber="51">
+<?pde version="3.8"?><target name="Neon" sequenceNumber="53">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="com.google.guava" version="0.0.0"/>
@@ -7,22 +7,22 @@
 <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20160520211859/repository"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.emf.ecore.xcore.sdk.feature.group" version="1.4.0.v20160526-0606"/>
-<unit id="org.eclipse.mylyn.ide_feature.feature.group" version="3.21.0.v20160912-1820"/>
-<unit id="org.eclipse.cdt.testsrunner.feature.feature.group" version="9.2.0.201612061315"/>
-<unit id="org.eclipse.mylyn.git.feature.group" version="1.13.0.v20160630-2022"/>
-<unit id="org.eclipse.emf.emfstore.sdk.feature.feature.group" version="1.8.1.v20161125-1451"/>
-<unit id="org.eclipse.mylyn.wikitext_feature.feature.group" version="2.10.1.v20161129-1925"/>
-<unit id="org.eclipse.emf.ecp.emfforms.sdk.feature.feature.group" version="1.11.0.20161205-1431"/>
-<unit id="org.eclipse.cdt.sdk.feature.group" version="9.2.0.201612061315"/>
-<unit id="org.eclipse.mylyn_feature.feature.group" version="3.21.0.v20160914-0252"/>
-<unit id="org.eclipse.cdt.mylyn.feature.group" version="5.17.0.v20160701-1337"/>
-<unit id="org.eclipse.mylyn.hudson.feature.group" version="1.13.0.v20160806-1446"/>
-<unit id="org.eclipse.emf.sdk.feature.group" version="2.12.0.v20160526-0356"/>
-<unit id="org.eclipse.mylyn.team_feature.feature.group" version="3.21.0.v20160701-1337"/>
-<unit id="org.eclipse.xtext.sdk.feature.group" version="2.10.0.v201605250459"/>
-<unit id="org.eclipse.zest.sdk.feature.group" version="1.7.0.201606061308"/>
-<unit id="org.eclipse.mylyn.trac_feature.feature.group" version="3.21.0.v20160630-2019"/>
+<unit id="org.eclipse.emf.ecore.xcore.sdk.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.mylyn.ide_feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.cdt.testsrunner.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.mylyn.git.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.emf.emfstore.sdk.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.mylyn.wikitext_feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.emf.ecp.emfforms.sdk.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.cdt.sdk.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.mylyn_feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.cdt.mylyn.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.mylyn.hudson.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.emf.sdk.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.mylyn.team_feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.xtext.sdk.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.zest.sdk.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.mylyn.trac_feature.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/releases/neon"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
@@ -44,8 +44,19 @@
 <repository location="http://download.eclipse.org/eclipse/updates/4.6"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.rmf.reqif10.pror.feature.feature.group" version="0.13.0.201509161042"/>
+<unit id="org.eclipse.rmf.reqif10.pror.feature.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/rmf/updates/releases"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.capra.handler.office.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.capra.handler.jdt.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.capra.handler.papyrus.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.capra.handler.hudson.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.capra.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.capra.handler.php.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.capra.handler.reqif.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.capra.handler.cdt.feature.feature.group" version="0.0.0"/>
+<repository location="https://hudson.eclipse.org/capra/job/build-src-develop-nightly/281/artifact/org.eclipse.capra.releng.p2/target/repository/"/>
 </location>
 </locations>
 </target>
