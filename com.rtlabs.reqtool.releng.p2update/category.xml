@@ -3,37 +3,37 @@
    <feature url="features/com.rtlabs.reqtool.feature_0.1.0.qualifier.jar" id="com.rtlabs.reqtool.feature" version="0.1.0.qualifier">
       <category name="com.rtlabs.reqtool"/>
    </feature>
-   <feature url="features/org.eclipse.capra.core.feature_0.7.0.201707051532.jar" id="org.eclipse.capra.core.feature" version="0.7.0.201707051532">
+   <feature url="features/org.eclipse.capra.core.feature_0.7.0.qualifier.jar" id="org.eclipse.capra.core.feature" version="0.7.0.qualifier">
       <category name="com.rtlabs.capra"/>
    </feature>
-   <feature url="features/org.eclipse.capra.feature_0.7.0.201707051532.jar" id="org.eclipse.capra.feature" version="0.7.0.201707051532">
+   <feature url="features/org.eclipse.capra.feature_0.7.0.qualifier.jar" id="org.eclipse.capra.feature" version="0.7.0.qualifier">
       <category name="com.rtlabs.capra"/>
    </feature>
-   <feature url="features/org.eclipse.capra.generic.feature_0.7.0.201707051532.jar" id="org.eclipse.capra.generic.feature" version="0.7.0.201707051532">
+   <feature url="features/org.eclipse.capra.generic.feature_0.7.0.qualifier.jar" id="org.eclipse.capra.generic.feature" version="0.7.0.qualifier">
       <category name="com.rtlabs.capra"/>
    </feature>
-   <feature url="features/org.eclipse.capra.handler.cdt.feature_0.7.0.201707051532.jar" id="org.eclipse.capra.handler.cdt.feature" version="0.7.0.201707051532">
+   <feature url="features/org.eclipse.capra.handler.cdt.feature_0.7.0.qualifier.jar" id="org.eclipse.capra.handler.cdt.feature" version="0.7.0.qualifier">
       <category name="com.rtlabs.capra"/>
    </feature>
-   <feature url="features/org.eclipse.capra.handler.hudson.feature_0.7.0.201707051532.jar" id="org.eclipse.capra.handler.hudson.feature" version="0.7.0.201707051532">
+   <feature url="features/org.eclipse.capra.handler.hudson.feature_0.7.0.qualifier.jar" id="org.eclipse.capra.handler.hudson.feature" version="0.7.0.qualifier">
       <category name="com.rtlabs.capra"/>
    </feature>
-   <feature url="features/org.eclipse.capra.handler.jdt.feature_0.7.0.201707051532.jar" id="org.eclipse.capra.handler.jdt.feature" version="0.7.0.201707051532">
+   <feature url="features/org.eclipse.capra.handler.jdt.feature_0.7.0.qualifier.jar" id="org.eclipse.capra.handler.jdt.feature" version="0.7.0.qualifier">
       <category name="com.rtlabs.capra"/>
    </feature>
-   <feature url="features/org.eclipse.capra.handler.office.feature_0.7.0.201707051532.jar" id="org.eclipse.capra.handler.office.feature" version="0.7.0.201707051532">
+   <feature url="features/org.eclipse.capra.handler.office.feature_0.7.0.qualifier.jar" id="org.eclipse.capra.handler.office.feature" version="0.7.0.qualifier">
       <category name="com.rtlabs.capra"/>
    </feature>
-   <feature url="features/org.eclipse.capra.handler.papyrus.feature_0.7.0.201707051532.jar" id="org.eclipse.capra.handler.papyrus.feature" version="0.7.0.201707051532">
+   <feature url="features/org.eclipse.capra.handler.papyrus.feature_0.7.0.qualifier.jar" id="org.eclipse.capra.handler.papyrus.feature" version="0.7.0.qualifier">
       <category name="com.rtlabs.capra"/>
    </feature>
-   <feature url="features/org.eclipse.capra.handler.php.feature_0.7.0.201707051532.jar" id="org.eclipse.capra.handler.php.feature" version="0.7.0.201707051532">
+   <feature url="features/org.eclipse.capra.handler.php.feature_0.7.0.qualifier.jar" id="org.eclipse.capra.handler.php.feature" version="0.7.0.qualifier">
       <category name="com.rtlabs.capra"/>
    </feature>
-   <feature url="features/org.eclipse.capra.handler.reqif.feature_0.7.0.201707051532.jar" id="org.eclipse.capra.handler.reqif.feature" version="0.7.0.201707051532">
+   <feature url="features/org.eclipse.capra.handler.reqif.feature_0.7.0.qualifier.jar" id="org.eclipse.capra.handler.reqif.feature" version="0.7.0.qualifier">
       <category name="com.rtlabs.capra"/>
    </feature>
-   <feature url="features/org.eclipse.capra.ui.feature_0.7.0.201707051532.jar" id="org.eclipse.capra.ui.feature" version="0.7.0.201707051532">
+   <feature url="features/org.eclipse.capra.ui.feature_0.7.0.qualifier.jar" id="org.eclipse.capra.ui.feature" version="0.7.0.qualifier">
       <category name="com.rtlabs.capra"/>
    </feature>
    <category-def name="com.rtlabs.reqtool" label="ReqTool"/>
