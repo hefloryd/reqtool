@@ -3,6 +3,7 @@ language: java
 cache:  
   directories:  
     - $HOME/.m2
+before_script: cd com.rtlabs.reqtool.releng
 script: mvn clean verify
 jdk:
 - oraclejdk8
