@@ -103,6 +103,8 @@ If that fails, or to work with a modified version of Capra, its source code repo
 
 * Create a requirements model file using the *New* -> *ReqTool* -> *Specification* command. The file will open in the ReqTool requirements editor.
 
+* To link an artifact with a requirement, simply drag-and-drop the artifact on the requirement in the ReqTool requirements editor.
+
 WARNING: The Capra `org.eclipse.capra.generic` bundles must not be installed in the Eclipse 
 instance running ReqTool. That is because Capra (at least up to version 0.7.0) can not 
 handle multiple models running at once.
