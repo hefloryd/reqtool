@@ -1,4 +1,8 @@
-@GenModel(editDirectory="/com.rtlabs.reqtool.model.edit/src-gen", fileExtensions="spec")
+@GenModel(
+	editDirectory="/com.rtlabs.reqtool.model.edit/src-gen",
+	fileExtensions="spec",
+	modelDirectory="/com.rtlabs.reqtool.model/src-gen"
+)
 package com.rtlabs.reqtool.model.requirements
 
 import org.eclipse.emf.ecore.EObject
