@@ -105,6 +105,8 @@ If that fails, or to work with a modified version of Capra, its source code repo
 
 * To link an artifact with a requirement, simply drag-and-drop the artifact on the requirement in the ReqTool requirements editor.
 
+* To delete any link, open the *Trace View* and select the arrow representing the link, then press the delete key.
+
 WARNING: The Capra `org.eclipse.capra.generic` bundles must not be installed in the Eclipse 
 instance running ReqTool. That is because Capra (at least up to version 0.7.0) can not 
 handle multiple models running at once.
@@ -118,7 +120,6 @@ handle multiple models running at once.
 
 ### Bugs, Defects and Limitations
 - It is not possible to input newlines in the requirements body editor. The entry key commits the current text.
-- It is currently not possible to remove linked artifacs from requirements (its fairly easy to edit the XML though :) ).
 - Many other GUI and usability features...
 
 [req_table_img]: com.rtlabs.reqtool.documentation/Requirement_table_screenshot.png
