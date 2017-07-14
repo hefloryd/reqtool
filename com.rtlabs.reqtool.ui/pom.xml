@@ -12,5 +12,22 @@
 		<artifactId>com.rtlabs.reqtool.releng</artifactId>
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
+	
+	<properties>
+		<models.location>${project.basedir}/src/com/rtlabs/reqtool/ui/wizards/</models.location>
+	</properties>
+	
+	<!-- explicitly call plugins from pluginManagement in parent POM -->
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.xtext</groupId>
+				<artifactId>xtext-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>

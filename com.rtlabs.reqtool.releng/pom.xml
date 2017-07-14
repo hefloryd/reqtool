@@ -1,95 +1,240 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- 
-    Update versions command:
-    mvn org.eclipse.tycho:tycho-versions-plugin:set-version -DnewVersion=1.1.0-SNAPSHOT -Dtycho.mode=maven
+	Update versions command:
+	mvn org.eclipse.tycho:tycho-versions-plugin:set-version -DnewVersion=1.1.0-SNAPSHOT -Dtycho.mode=maven
 -->
 
 <project
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-    xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <modelVersion>4.0.0</modelVersion>
-  
-  <groupId>com.rtlabs.reqtool</groupId>
-  <artifactId>com.rtlabs.reqtool.releng</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<groupId>com.rtlabs.reqtool</groupId>
+	<artifactId>com.rtlabs.reqtool.releng</artifactId>
+	<version>0.1.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
-  <modules>
-    <module>../com.rtlabs.reqtool.common</module>
-    <module>../com.rtlabs.reqtool.model</module>
-    <module>../com.rtlabs.reqtool.model.edit</module>
-    <module>../com.rtlabs.reqtool.ui</module>
-    
-    <module>../com.rtlabs.reqtool.feature</module>
-    <module>../com.rtlabs.reqtool.releng.target</module>
-    <module>../com.rtlabs.reqtool.releng.p2update</module>
-    
-    <module>../com.rtlabs.reqtool.ui.tests</module>
-  </modules>
+	<modules>
+		<module>../com.rtlabs.reqtool.common</module>
+		<module>../com.rtlabs.reqtool.model</module>
+		<module>../com.rtlabs.reqtool.model.edit</module>
+		<module>../com.rtlabs.reqtool.ui</module>
+		
+		<module>../com.rtlabs.reqtool.feature</module>
+		<module>../com.rtlabs.reqtool.releng.target</module>
+		<module>../com.rtlabs.reqtool.releng.p2update</module>
+		
+		<module>../com.rtlabs.reqtool.ui.tests</module>
+	</modules>
+	
+	<properties>
+		<!-- Skip deployment for all modules that don't have anything else configured. -->
+		<maven.deploy.skip>true</maven.deploy.skip>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<tycho-version>0.26.0</tycho-version>
+		<!--
+			for xcore model generation 
+			
+			for reference see
+			https://github.com/ghillairet/xcore-maven-example
+		-->
+		<emf-version>2.12.0</emf-version>
+		<emf-common-version>2.12.0</emf-common-version>
+		<emf-codegen-version>2.12.0</emf-codegen-version>
+		<xtext-version>2.11.0</xtext-version>
+		<ecore-xtext-version>1.2.0</ecore-xtext-version>
+		<ecore-xcore-version>1.3.1</ecore-xcore-version>
+		<ecore-xcore-lib-version>1.1.100</ecore-xcore-lib-version>
+		<generated-sources.location>${project.basedir}/src-gen/</generated-sources.location>
+		<models.location>${project.basedir}/model</models.location>
+	</properties>
+	
+	
+	<profiles>
+	</profiles>
+	
+	<build>
+		
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-maven-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<extensions>true</extensions>
+			</plugin>
+		
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<target>
+						<artifact>
+							<groupId>com.rtlabs.reqtool</groupId>
+							<artifactId>com.rtlabs.reqtool.releng.target</artifactId>
+							<!-- Target should have the same version as the releng module. -->
+							<version>${project.version}</version>
+						</artifact>
+					</target>
+					<environments>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86_64</arch>
+						</environment>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86_64</arch>
+						</environment>
+						<environment>
+							<os>macosx</os>
+							<ws>cocoa</ws>
+							<arch>x86_64</arch>
+						</environment>
+					</environments>
+				</configuration>
+			</plugin>
+		</plugins>
 
-  <properties>
-    <!-- Skip deployment for all modules that don't have anything else configured. -->
-    <maven.deploy.skip>true</maven.deploy.skip>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho-version>0.26.0</tycho-version>
-  </properties>
-
-  <profiles>
-  </profiles>
-    <build>
-    <plugins>
-
-      <plugin>
-        <groupId>org.eclipse.tycho</groupId>
-        <artifactId>tycho-maven-plugin</artifactId>
-        <version>${tycho-version}</version>
-        <extensions>true</extensions>
-      </plugin>
-      
-      <plugin>
-        <groupId>org.eclipse.tycho</groupId>
-        <artifactId>target-platform-configuration</artifactId>
-        <version>${tycho-version}</version>
-        <configuration>
-          <target>
-            <artifact>
-              <groupId>com.rtlabs.reqtool</groupId>
-              <artifactId>com.rtlabs.reqtool.releng.target</artifactId>
-              <!-- Target should have the same version as the releng module. -->
-              <version>${project.version}</version>
-            </artifact>
-          </target>
-          <environments>
-            <environment>
-              <os>win32</os>
-              <ws>win32</ws>
-              <arch>x86</arch>
-            </environment>
-            <environment>
-              <os>win32</os>
-              <ws>win32</ws>
-              <arch>x86_64</arch>
-            </environment>
-            <environment>
-              <os>linux</os>
-              <ws>gtk</ws>
-              <arch>x86</arch>
-            </environment>
-            <environment>
-              <os>linux</os>
-              <ws>gtk</ws>
-              <arch>x86_64</arch>
-            </environment>
-            <environment>
-              <os>macosx</os>
-              <ws>cocoa</ws>
-              <arch>x86_64</arch>
-            </environment>
-          </environments>
-        </configuration>
-      </plugin>
-      
-    </plugins>
-  </build>
+		<!-- https://maven.apache.org/pom.html#Plugin_Management --> 
+		<pluginManagement>
+		<plugins>
+			<!-- clean any existing generated code -->
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>2.6.1</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>src-gen</directory>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+			<!-- 
+				run source code generation from xcore model
+				
+				see also https://github.com/ghillairet/xcore-maven-example
+				for reference
+			-->
+			<plugin>
+				<groupId>org.eclipse.xtext</groupId>
+				<artifactId>xtext-maven-plugin</artifactId>
+				<version>${xtext-version}</version>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<languages>
+						<language>
+							<setup>org.eclipse.xtext.ecore.EcoreSupport</setup>
+						</language>
+						<language>
+							<setup>org.eclipse.emf.codegen.ecore.xtext.GenModelSupport</setup>
+						</language>
+						<language>
+							<setup>org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup</setup>
+							<!--
+							This configuration is ignored anyway (bug?), 
+							have to set it inside
+							the Xcore model itself with modelDirectory property.
+							-->
+							<!--
+							<outputConfigurations>
+								<outputConfiguration>
+									<outputDirectory>${generated-sources.location}</outputDirectory>
+								</outputConfiguration>
+							</outputConfigurations>
+							-->
+						</language>
+					</languages>
+					<sourceRoots>
+						<root>${models.location}</root>
+					</sourceRoots>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.eclipse.core</groupId>
+						<artifactId>org.eclipse.core.resources</artifactId>
+						<version>3.7.100</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.emf</groupId>
+						<artifactId>org.eclipse.emf.codegen</artifactId>
+						<version>2.11.0-v20150806-0404</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.emf</groupId>
+						<artifactId>org.eclipse.emf.codegen.ecore</artifactId>
+						<version>${emf-codegen-version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.emf</groupId>
+						<artifactId>org.eclipse.emf.codegen.ecore.xtext</artifactId>
+						<version>${ecore-xtext-version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.emf</groupId>
+						<artifactId>org.eclipse.emf.common</artifactId>
+						<version>${emf-common-version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.emf</groupId>
+						<artifactId>org.eclipse.emf.ecore</artifactId>
+						<version>${emf-version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.emf</groupId>
+						<artifactId>org.eclipse.emf.ecore.xcore</artifactId>
+						<version>${ecore-xcore-version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.emf</groupId>
+						<artifactId>org.eclipse.emf.ecore.xcore.lib</artifactId>
+						<version>${ecore-xcore-lib-version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.emf</groupId>
+						<artifactId>org.eclipse.emf.ecore.xmi</artifactId>
+						<version>${emf-version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.text</groupId>
+						<artifactId>org.eclipse.text</artifactId>
+						<version>3.5.101</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.xtext</groupId>
+						<artifactId>org.eclipse.xtext.ecore</artifactId>
+						<version>${xtext-version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.xtext</groupId>
+						<artifactId>org.eclipse.xtext.generator</artifactId>
+						<version>${xtext-version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+						
+		</plugins>
+		</pluginManagement>
+	
+	</build>
 </project>
